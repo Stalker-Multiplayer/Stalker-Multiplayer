@@ -1,0 +1,1 @@
+start /B UE4Editor.exe "%CD%\StalkerMP.uproject" -game -log

@@ -1,0 +1,1 @@
+start /B UE4Editor.exe "%CD%\StalkerMP.uproject" -server -log -Port=7778 -QueryPort=27017 -ServerConfig=Server_BR.cfg
