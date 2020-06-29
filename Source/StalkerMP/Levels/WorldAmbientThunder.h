@@ -72,7 +72,7 @@ protected:
 		float MinSoundDelay = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		float MaxSoundDelay = 3;
+		float MaxSoundDelay = 2;
 
 
 

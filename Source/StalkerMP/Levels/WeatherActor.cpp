@@ -261,7 +261,7 @@ void AWeatherActor::ApplyCurrentWeatherTimeline(float Val)
 		return;
 	}
 
-	if ((USMPFunctions::TimecodeToSeconds(NextWeather.StartTime) < Val && USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) <= USMPFunctions::TimecodeToSeconds(NextWeather.StartTime))
+	if ((USMPFunctions::TimecodeToSeconds(NextWeather.StartTime) <= Val && USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) < USMPFunctions::TimecodeToSeconds(NextWeather.StartTime))
 		||
 		(CurrentTime > Val && USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) > USMPFunctions::TimecodeToSeconds(NextWeather.StartTime)))
 	{
