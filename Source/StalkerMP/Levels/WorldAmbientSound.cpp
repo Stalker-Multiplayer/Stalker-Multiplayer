@@ -3,37 +3,37 @@
 
 #include "WorldAmbientSound.h"
 
-#include "StalkerMP/SMPFunctions.h"
-
 #include "Components/AudioComponent.h"
 
 AWorldAmbientSound::AWorldAmbientSound()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	//SetActorHiddenInGame(true);
-	SetReplicates(false);
-	GetAudioComponent()->bAutoActivate = false;
+	SetHidden(true);
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->bAutoActivate = false;
+	AudioComponent->bStopWhenOwnerDestroyed = true;
+	AudioComponent->bShouldRemainActiveIfDropped = true;
+	AudioComponent->Mobility = EComponentMobility::Static;
+	RootComponent = AudioComponent;
 }
 
 void AWorldAmbientSound::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetAudioComponent()->AdjustVolume(0.01, 0, EAudioFaderCurve::Logarithmic);
-
-	StartTimeInt = USMPFunctions::TimecodeToSeconds(StartTime);
-	EndTimeInt = USMPFunctions::TimecodeToSeconds(EndTime);
+	AudioComponent->AdjustVolume(0.01, 0, EAudioFaderCurve::Logarithmic);
 }
 
-void AWorldAmbientSound::SetVolume(float NewVolume, float FadeTime)
+void AWorldAmbientSound::Update(float NewWeatherLerp, float FadeTime)
 {
-	if (NewVolume > 0 && !GetAudioComponent()->IsActive())
+	if (NewWeatherLerp > 0 && !AudioComponent->IsActive())
 	{
-		GetAudioComponent()->SetActive(true);
+		AudioComponent->SetActive(true);
 	}
-	if (NewVolume != Volume)
+	if (NewWeatherLerp != Volume)
 	{
-		Volume = NewVolume;
-		GetAudioComponent()->AdjustVolume(FadeTime, Volume, EAudioFaderCurve::Logarithmic);
+		Volume = NewWeatherLerp;
+		AudioComponent->AdjustVolume(FadeTime, Volume, EAudioFaderCurve::Logarithmic);
 	}
 }

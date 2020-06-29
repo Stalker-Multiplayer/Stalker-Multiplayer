@@ -4,16 +4,17 @@
 
 #include "CoreMinimal.h"
 
-#include "Misc/Timecode.h"
-#include "Sound/AmbientSound.h"
+#include "StalkerMP/Levels/BaseWorldAmbientEffect.h"
 
 #include "WorldAmbientSound.generated.h"
+
+class UAudioComponent;
 
 /**
  * 
  */
 UCLASS()
-class STALKERMP_API AWorldAmbientSound : public AAmbientSound
+class STALKERMP_API AWorldAmbientSound : public ABaseWorldAmbientEffect
 {
 	GENERATED_BODY()
 
@@ -22,9 +23,9 @@ class STALKERMP_API AWorldAmbientSound : public AAmbientSound
 // ------------------------------------------------------------------------- Function Overrides --------------------------------------------------------------------------
 
 public:
-	// Sets default values for this actor's properties
 	AWorldAmbientSound();
 	virtual void BeginPlay() override;
+	virtual void Update(float NewWeatherLerp, float FadeTime);
 
 
 
@@ -36,40 +37,10 @@ private:
 		float Volume = 0;
 
 
-public:
+protected:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FTimecode StartTime = FTimecode(0, 0, 0, 0, false);
-
-	UPROPERTY()
-		int StartTimeInt = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FTimecode EndTime = FTimecode(24, 0, 0, 0, false);
-
-	UPROPERTY()
-		int EndTimeInt = 86400;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool PlayedOnlyOutside = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool AffectedByWeatherLerp = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<FString> RequiredWeathers;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float DefaultFadeTime = 1.0f;
-
-
-
-// ------------------------------------------------------------------------- Functions --------------------------------------------------------------------------
-
-public:
-
-	UFUNCTION()
-		void SetVolume(float NewVolume, float FadeTime);
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		UAudioComponent* AudioComponent;
 
 
 };

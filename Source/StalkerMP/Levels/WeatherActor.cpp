@@ -3,8 +3,7 @@
 
 #include "WeatherActor.h"
 
-#include "StalkerMP/Levels/WorldAmbientSound.h"
-#include "StalkerMP/Levels/WorldAmbientSoundManager.h"
+#include "StalkerMP/Levels/WorldAmbientEffectManager.h"
 #include "StalkerMP/SMPFunctions.h"
 
 #include "Components/StaticMeshComponent.h"
@@ -189,10 +188,10 @@ void AWeatherActor::BeginPlay()
 			ChangingTimeCurve->FloatCurve = ChangingTimeRichCurve;
 			OnEverythingReplicated();
 		}
-
-		AWorldAmbientSoundManager* WorldAmbientSoundManager = GetWorld()->SpawnActor<AWorldAmbientSoundManager>(AWorldAmbientSoundManager::StaticClass(), FActorSpawnParameters());
-		WorldAmbientSoundManager->SetWeatherActor(this);
 	}
+
+	AWorldAmbientEffectManager* WorldAmbientEffectManager = GetWorld()->SpawnActor<AWorldAmbientEffectManager>(AWorldAmbientEffectManager::StaticClass(), FActorSpawnParameters());
+	WorldAmbientEffectManager->SetWeatherActor(this);
 }
 
 void AWeatherActor::Tick(float DeltaSeconds)

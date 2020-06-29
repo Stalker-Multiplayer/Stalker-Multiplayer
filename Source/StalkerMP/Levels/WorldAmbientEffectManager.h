@@ -6,25 +6,25 @@
 
 #include "GameFramework/Actor.h"
 
-#include "WorldAmbientSoundManager.generated.h"
+#include "WorldAmbientEffectManager.generated.h"
 
 class AWeatherActor;
-class AWorldAmbientSound;
+class ABaseWorldAmbientEffect;
 
 USTRUCT()
-struct FAmbientSoundsArray
+struct FAmbientEffectsArray
 {
 	GENERATED_BODY()
 
 public:
 
 	UPROPERTY()
-		TArray<AWorldAmbientSound*> Sounds;
+		TArray<ABaseWorldAmbientEffect*> Effects;
 
 };
 
 UCLASS()
-class STALKERMP_API AWorldAmbientSoundManager : public AActor
+class STALKERMP_API AWorldAmbientEffectManager : public AActor
 {
 	GENERATED_BODY()
 	
@@ -33,7 +33,7 @@ class STALKERMP_API AWorldAmbientSoundManager : public AActor
 
 public:
 
-	AWorldAmbientSoundManager();
+	AWorldAmbientEffectManager();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
@@ -48,7 +48,7 @@ private:
 		AWeatherActor* WeatherActor;
 
 	UPROPERTY()
-		TMap<FString, FAmbientSoundsArray> SoundsMap;
+		TMap<FString, FAmbientEffectsArray> EffectsMap;
 
 	UPROPERTY()
 		TArray<FString> WeatherNames;
