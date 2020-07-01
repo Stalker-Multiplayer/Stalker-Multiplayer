@@ -225,11 +225,12 @@ void ADMGameMode::LaunchGameStartTimer()
 {
 	GetWorld()->GetTimerManager().SetTimer(StartCountdownTimerHandle, this, &ADMGameMode::UpdateGameStartTimer, 1, true, 1);
 
-	FTimecode Time = USMPFunctions::SecondsToTimecode(
-		USMPFunctions::TimecodeToSeconds(EarliestStartTime)
-		+ UKismetMathLibrary::RandomInteger(USMPFunctions::TimecodeToSeconds(LatestStartTime) - USMPFunctions::TimecodeToSeconds(EarliestStartTime))
-	);
-	WeatherActor->SetTimeOfDay(Time, StartGameDelay, false);
+	int EarliestStartTimeInt = USMPFunctions::TimecodeToSeconds(EarliestStartTime);
+	int LatestStartTimeInt = USMPFunctions::TimecodeToSeconds(LatestStartTime);
+
+	int NextStartTime = EarliestStartTimeInt + UKismetMathLibrary::RandomInteger(LatestStartTimeInt - EarliestStartTimeInt);
+	FTimecode Time = USMPFunctions::SecondsToTimecode(NextStartTime);
+	WeatherActor->SetTimeOfDay(Time, StartGameDelay, (NextStartTime - WeatherActor->GetCurrentTime()) < NEXT_START_TIME_MIN_DELTA);
 
 	GetGameState<ADMGameState>()->SetMatchState(EMatchState::Starting);
 }

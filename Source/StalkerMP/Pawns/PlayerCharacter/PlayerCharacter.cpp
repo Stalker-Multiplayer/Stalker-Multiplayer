@@ -1549,7 +1549,8 @@ void APlayerCharacter::DoAction()
 					OpenDeadBodyBackpack = TheDeadBodyBackpack;
 					OpenInventory();
 				}
-				else {
+				else
+				{
 					OpenDeadBodyBackpack = nullptr;
 					CloseInventory();
 				}

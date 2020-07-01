@@ -60,6 +60,11 @@ class STALKERMP_API ABRGameMode : public ABaseGameMode
 
 // ------------------------------------------------------------------------- Constants --------------------------------------------------------------------------
 
+private:
+
+	static const int NEXT_START_TIME_MIN_DELTA = 7200; // 2 hours
+
+
 public:
 	
 	static const FString MIN_PLAYERS_TO_START_SETTING_KEY;
