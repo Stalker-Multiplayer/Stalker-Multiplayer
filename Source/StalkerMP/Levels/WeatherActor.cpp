@@ -523,6 +523,16 @@ void AWeatherActor::AttachRainToCamera(APlayerCameraManager* CameraManager)
 	AttachedCamera = CameraManager;
 }
 
+float AWeatherActor::GetFogMaxOpacity()
+{
+	return ExponentialHeightFog->FogMaxOpacity;
+}
+
+void AWeatherActor::SetFogMaxOpacity(float Opacity)
+{
+	ExponentialHeightFog->SetFogMaxOpacity(Opacity);
+}
+
 TArray<FString> AWeatherActor::GetAllWeatherNames()
 {
 	TArray<FString> WeatherNames;

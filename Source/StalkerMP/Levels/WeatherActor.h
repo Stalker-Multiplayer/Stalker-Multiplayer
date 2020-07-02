@@ -314,6 +314,12 @@ public:
 		float GetWeatherLerpValue() { return WeatherLerpValue; }
 
 	UFUNCTION()
+		float GetFogMaxOpacity();
+
+	UFUNCTION()
+		void SetFogMaxOpacity(float Opacity);
+
+	UFUNCTION()
 		TArray<FString> GetAllWeatherNames();
 
 	UFUNCTION()

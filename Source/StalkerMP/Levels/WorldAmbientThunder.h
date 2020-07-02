@@ -8,6 +8,8 @@
 
 #include "WorldAmbientThunder.generated.h"
 
+class AWeatherActor;
+
 class UAudioComponent;
 class UDirectionalLightComponent;
 class USoundBase;
@@ -26,6 +28,7 @@ class STALKERMP_API AWorldAmbientThunder : public ABaseWorldAmbientEffect
 
 public:
 	AWorldAmbientThunder();
+	virtual void BeginPlay() override;
 	virtual void Update(float NewWeatherLerp, float FadeTime);
 
 
@@ -38,7 +41,13 @@ private:
 		FTimerHandle ThunderTimerHandle;
 
 	UPROPERTY()
+		AWeatherActor* WeatherActor;
+
+	UPROPERTY()
 		float SoundDelay = 0;
+
+	UPROPERTY()
+		float LastFogMaxOpacity = 1.0f;
 
 	
 

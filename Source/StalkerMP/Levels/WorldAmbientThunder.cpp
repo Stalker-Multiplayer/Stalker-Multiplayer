@@ -3,10 +3,13 @@
 
 #include "WorldAmbientThunder.h"
 
+#include "StalkerMP/Levels/WeatherActor.h"
+
 #include "Components/AudioComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Engine/Public/TimerManager.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "EngineUtils.h"
 
 AWorldAmbientThunder::AWorldAmbientThunder()
 {
@@ -34,6 +37,17 @@ AWorldAmbientThunder::AWorldAmbientThunder()
 	LightComponent->bUseRayTracedDistanceFieldShadows = true;
 	LightComponent->DistanceFieldShadowDistance = 200000;
 	LightComponent->SetupAttachment(RootComponent);
+}
+
+void AWorldAmbientThunder::BeginPlay()
+{
+	Super::BeginPlay();
+
+	for (TActorIterator<AWeatherActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+	{
+		WeatherActor = *ActorItr;
+		break;
+	}
 }
 
 void AWorldAmbientThunder::Update(float NewWeatherLerp, float FadeTime)
@@ -81,25 +95,31 @@ void AWorldAmbientThunder::Multicast_ShowThunder_Implementation(FRotator LightRo
 
 void AWorldAmbientThunder::ShowThunderLight1()
 {
+	LastFogMaxOpacity = WeatherActor->GetFogMaxOpacity();
 	LightComponent->SetIntensity(10);
+	WeatherActor->SetFogMaxOpacity(0.9f);
 	GetWorld()->GetTimerManager().SetTimer(ThunderTimerHandle, this, &AWorldAmbientThunder::HideThunderLight1, 0.05, false);
 }
 
 void AWorldAmbientThunder::HideThunderLight1()
 {
 	LightComponent->SetIntensity(0);
+	WeatherActor->SetFogMaxOpacity(LastFogMaxOpacity);
 	GetWorld()->GetTimerManager().SetTimer(ThunderTimerHandle, this, &AWorldAmbientThunder::ShowThunderLight2, 0.05, false);
 }
 
 void AWorldAmbientThunder::ShowThunderLight2()
 {
+	LastFogMaxOpacity = WeatherActor->GetFogMaxOpacity();
 	LightComponent->SetIntensity(10);
+	WeatherActor->SetFogMaxOpacity(0.9f);
 	GetWorld()->GetTimerManager().SetTimer(ThunderTimerHandle, this, &AWorldAmbientThunder::HideThunderLight2, 0.05, false);
 }
 
 void AWorldAmbientThunder::HideThunderLight2()
 {
 	LightComponent->SetIntensity(0);
+	WeatherActor->SetFogMaxOpacity(LastFogMaxOpacity);
 	GetWorld()->GetTimerManager().SetTimer(ThunderTimerHandle, this, &AWorldAmbientThunder::PlayThunderSound, SoundDelay, false, SoundDelay);
 }
 
