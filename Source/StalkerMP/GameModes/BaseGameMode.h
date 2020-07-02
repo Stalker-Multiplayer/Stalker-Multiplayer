@@ -9,6 +9,7 @@
 #include "OnlineDelegateMacros.h"
 #include "BaseGameMode.generated.h"
 
+class ABasePlayerController;
 class APlayerCharacter;
 class ADeadBodyBackpack;
 class ASpectator;
@@ -88,14 +89,11 @@ protected:
 	UFUNCTION()
 		virtual void RestartGame();
 
-	UFUNCTION()
-		ASpectator* SpawnSpectator(FTransform Transform);
-
-	UFUNCTION()
-		APlayerCharacter* SpawnPlayerCharacter(FTransform Transform);
-
 
 public:
+
+	UFUNCTION()
+		APawn* RespawnAsPawn(ABasePlayerController* PlayerController, TSubclassOf<APawn> PawnClass, FTransform SpawnTransform, bool AutoPossess = true, bool DestroyOldPawn = false);
 
 	UFUNCTION()
 		virtual void OnPlayerCharacterDied(APlayerCharacter* PlayerCharacter, AController* Controller, AController* InstigatedBy, AActor* DamageCauser, ADeadBodyBackpack* DeadBodyBackpack);

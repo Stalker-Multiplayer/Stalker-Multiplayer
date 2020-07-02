@@ -81,24 +81,23 @@ void ABaseGameMode::Logout(AController* Exiting)
 	}
 }
 
-ASpectator* ABaseGameMode::SpawnSpectator(FTransform Transform)
+APawn* ABaseGameMode::RespawnAsPawn(ABasePlayerController* PlayerController, TSubclassOf<APawn> PawnClass, FTransform SpawnTransform, bool AutoPossess, bool DestroyOldPawn)
 {
-	FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
-	return GetWorld()->SpawnActor<ASpectator>(
-		PlayerSpectatorClass,
-		Transform,
-		SpawnInfo);
-}
+	if (DestroyOldPawn && PlayerController->GetPawn()) {
+		PlayerController->GetPawn()->Destroy();
+	}
 
-APlayerCharacter* ABaseGameMode::SpawnPlayerCharacter(FTransform Transform)
-{
 	FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
+	APawn* Pawn = GetWorld()->SpawnActor<APawn>(
+		PawnClass, SpawnTransform.GetLocation(), FRotator(0, SpawnTransform.Rotator().Yaw, 0), SpawnInfo);
 
-	return GetWorld()->SpawnActor<APlayerCharacter>(
-		PlayerCharacterClass,
-		Transform.GetLocation(),
-		FRotator(0, Transform.GetRotation().Rotator().Yaw, 0),
-		SpawnInfo);
+	if (AutoPossess)
+	{
+		PlayerController->ClientSetRotation(SpawnTransform.Rotator());
+		PlayerController->Possess(Pawn);
+	}
+
+	return Pawn;
 }
 
 void ABaseGameMode::OnGamemodeLevelLoaded()

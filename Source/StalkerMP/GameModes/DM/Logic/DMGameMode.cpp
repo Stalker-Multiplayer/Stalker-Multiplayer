@@ -112,16 +112,11 @@ void ADMGameMode::HandleStartingNewPlayer_Implementation(APlayerController* Play
 				SpawnTransform = PlayerStart->GetActorTransform();
 			}
 
-			ASpectator* Spectator = SpawnSpectator(SpawnTransform);
-			PlayerController->ClientSetRotation(SpawnTransform.Rotator());
-			PlayerController->Possess(Spectator);
+			RespawnAsPawn((ADMPlayerController*)PlayerController, PlayerSpectatorClass, SpawnTransform);
 		}
 		else
 		{
-			FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
-			ASpectator* Spectator = SpawnSpectator(PlayerStartPIE->GetActorTransform());
-			PlayerController->ClientSetRotation(PlayerStartPIE->GetActorRotation());
-			PlayerController->Possess(Spectator);
+			RespawnAsPawn((ADMPlayerController*)PlayerController, PlayerSpectatorClass, PlayerStartPIE->GetActorTransform());
 		}
 
 		if (DMGameState->PlayerArray.Num() >= MinPlayersToStart)
@@ -292,8 +287,7 @@ void ADMGameMode::RestartGame()
 		if (!PlayerCharacter->GetIsDead())
 		{
 			if (ADMPlayerController* DMPlayerController = dynamic_cast<ADMPlayerController*>(PlayerCharacter->GetController())) {
-				ASpectator* Spectator = SpawnSpectator(PlayerCharacter->GetCameraTransform());
-				DMPlayerController->Possess(Spectator);
+				RespawnAsPawn(DMPlayerController, PlayerSpectatorClass, PlayerCharacter->GetCameraTransform());
 			}
 		}
 
@@ -333,20 +327,20 @@ void ADMGameMode::RespawnPlayer(ADMPlayerController* PlayerController)
 	{
 		APlayerStart* PlayerStart = Cast<APlayerStart>(AllPlayerStarts[UKismetMathLibrary::RandomInteger(AllPlayerStarts.Num())]);
 
-		APlayerCharacter* NewCharacter = SpawnPlayerCharacter(PlayerStart->GetTransform());
+		APlayerCharacter* NewCharacter = (APlayerCharacter*) RespawnAsPawn((ADMPlayerController*)PlayerController, PlayerCharacterClass, PlayerStart->GetTransform(), false);
 
 		GrantStartingItems(NewCharacter);
 
-		PlayerController->ClientSetRotation(NewCharacter->GetActorRotation());
+		PlayerController->ClientSetRotation(PlayerStart->GetTransform().Rotator());
 		PlayerController->Possess(NewCharacter);
 	}
 	else
 	{
-		APlayerCharacter* NewCharacter = SpawnPlayerCharacter(PlayerStartPIE->GetTransform());
+		APlayerCharacter* NewCharacter = (APlayerCharacter*) RespawnAsPawn((ADMPlayerController*)PlayerController, PlayerCharacterClass, PlayerStartPIE->GetTransform(), false);
 
 		GrantStartingItems(NewCharacter);
 
-		PlayerController->ClientSetRotation(NewCharacter->GetActorRotation());
+		PlayerController->ClientSetRotation(PlayerStartPIE->GetTransform().Rotator());
 		PlayerController->Possess(NewCharacter);
 	}
 }
@@ -357,9 +351,8 @@ void ADMGameMode::OnPlayerCharacterDied(APlayerCharacter* PlayerCharacter, ACont
 
 	if (GetGameState<ADMGameState>()->GetMatchState() == EMatchState::Ongoing)
 	{
-		if (ADMPlayerController* PlayerController = dynamic_cast<ADMPlayerController*>(Controller)) {
-			ASpectator* Spectator = SpawnSpectator(PlayerCharacter->GetCameraTransform());
-			PlayerController->Possess(Spectator);
+		if (ADMPlayerController* DMPlayerController = dynamic_cast<ADMPlayerController*>(Controller)) {
+			RespawnAsPawn(DMPlayerController, PlayerSpectatorClass, PlayerCharacter->GetCameraTransform());
 		}
 
 		FTimerDelegate TimerDelegate;

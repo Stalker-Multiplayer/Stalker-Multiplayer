@@ -44,7 +44,7 @@ void ATestGameMode::HandleStartingNewPlayer_Implementation(APlayerController* Pl
 		{
 			APlayerStart* PlayerStart = Cast<APlayerStart>(AllPlayerStarts[UKismetMathLibrary::RandomInteger(AllPlayerStarts.Num())]);
 
-			RespawnAsPawn((ATestPlayerController*)PlayerController, DefaultPawnClass, PlayerStart->GetActorTransform());
+			RespawnAsPawn((ATestPlayerController*)PlayerController, DefaultPawnClass, PlayerStart->GetTransform());
 		}
 		else
 		{
@@ -53,7 +53,7 @@ void ATestGameMode::HandleStartingNewPlayer_Implementation(APlayerController* Pl
 	}
 	else
 	{
-		RespawnAsPawn((ATestPlayerController*)PlayerController, DefaultPawnClass, PlayerStartPIE->GetActorTransform());
+		RespawnAsPawn((ATestPlayerController*)PlayerController, DefaultPawnClass, PlayerStartPIE->GetTransform());
 	}
 }
 
@@ -64,18 +64,4 @@ void ATestGameMode::Logout(AController* Exiting)
 	if (Exiting->GetPawn()) {
 		Exiting->GetPawn()->Destroy();
 	}
-}
-
-void ATestGameMode::RespawnAsPawn(ATestPlayerController* PlayerController, TSubclassOf<APawn> PawnClass, FTransform SpawnTransform)
-{
-	if (PlayerController->GetPawn()) {
-		PlayerController->GetPawn()->Destroy();
-	}
-
-	FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
-	APawn* Pawn = GetWorld()->SpawnActor<APawn>(
-		PawnClass, SpawnTransform, SpawnInfo);
-
-	PlayerController->ClientSetRotation(Pawn->GetActorRotation());
-	PlayerController->Possess(Pawn);
 }

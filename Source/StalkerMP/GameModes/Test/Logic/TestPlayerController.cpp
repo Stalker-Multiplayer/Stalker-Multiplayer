@@ -79,12 +79,12 @@ void ATestPlayerController::HideAllUI(bool HideCustom)
 
 void ATestPlayerController::RespawnAsPawn(TSubclassOf<APawn> PawnClass)
 {
-	Server_RespawnAsPawn(GetPawn()->GetActorTransform(), PawnClass);
+	Server_RespawnAsPawn(PlayerCameraManager->GetActorTransform(), PawnClass);
 }
 
 void ATestPlayerController::Server_RespawnAsPawn_Implementation(FTransform Transform, TSubclassOf<APawn> PawnClass)
 {
-	GetWorld()->GetAuthGameMode<ATestGameMode>()->RespawnAsPawn(this, PawnClass, Transform);
+	GetWorld()->GetAuthGameMode<ATestGameMode>()->RespawnAsPawn(this, PawnClass, Transform, true, true);
 }
 
 bool ATestPlayerController::Server_RespawnAsPawn_Validate(FTransform Transform, TSubclassOf<APawn> PawnClass)

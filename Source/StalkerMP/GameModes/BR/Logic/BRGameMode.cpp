@@ -89,16 +89,11 @@ void ABRGameMode::HandleStartingNewPlayer_Implementation(APlayerController* Play
 			SpawnTransform = PlayerStart->GetActorTransform();
 		}
 
-		ASpectator* Spectator = SpawnSpectator(SpawnTransform);
-		PlayerController->ClientSetRotation(SpawnTransform.Rotator());
-		PlayerController->Possess(Spectator);
+		RespawnAsPawn((ABRPlayerController*) PlayerController, PlayerSpectatorClass, SpawnTransform);
 	}
 	else
 	{
-		FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
-		ASpectator* Spectator = SpawnSpectator(PlayerStartPIE->GetActorTransform());
-		PlayerController->ClientSetRotation(PlayerStartPIE->GetActorRotation());
-		PlayerController->Possess(Spectator);
+		RespawnAsPawn((ABRPlayerController*) PlayerController, PlayerSpectatorClass, PlayerStartPIE->GetActorTransform());
 	}
 
 	ABRGameState* BRGameState = GetGameState<ABRGameState>();
@@ -188,8 +183,7 @@ void ABRGameMode::LaunchGameStartTimer()
 	int EarliestStartTimeInt = USMPFunctions::TimecodeToSeconds(EarliestStartTime);
 	int LatestStartTimeInt = USMPFunctions::TimecodeToSeconds(LatestStartTime);
 
-	//int NextStartTime = EarliestStartTimeInt + UKismetMathLibrary::RandomInteger(LatestStartTimeInt - EarliestStartTimeInt);
-	int NextStartTime = 0;
+	int NextStartTime = EarliestStartTimeInt + UKismetMathLibrary::RandomInteger(LatestStartTimeInt - EarliestStartTimeInt);
 	FTimecode Time = USMPFunctions::SecondsToTimecode(NextStartTime);
 	WeatherActor->SetTimeOfDay(Time, StartGameDelay, (NextStartTime - WeatherActor->GetCurrentTime()) < NEXT_START_TIME_MIN_DELTA);
 
@@ -233,12 +227,12 @@ void ABRGameMode::StartGame()
 			{
 				APlayerStart* PlayerStart = Cast<APlayerStart>(AllPlayerStarts[UKismetMathLibrary::RandomInteger(AllPlayerStarts.Num())]);
 
-				APlayerCharacter* NewCharacter = SpawnPlayerCharacter(PlayerStart->GetTransform());
+				APlayerCharacter* NewCharacter = (APlayerCharacter*) RespawnAsPawn(PlayersToSpawn[0], PlayerCharacterClass, PlayerStart->GetTransform(), false);
 				AliveCharacters.Add(NewCharacter);
 
 				GrantStartingItems(NewCharacter);
 
-				PlayersToSpawn[0]->ClientSetRotation(NewCharacter->GetActorRotation());
+				PlayersToSpawn[0]->ClientSetRotation(PlayerStart->GetTransform().Rotator());
 				PlayersToSpawn[0]->Possess(NewCharacter);
 
 				PlayersToSpawn.RemoveAt(0);
@@ -250,12 +244,12 @@ void ABRGameMode::StartGame()
 	{
 		while (PlayersToSpawn.Num() > 0)
 		{
-			APlayerCharacter* NewCharacter = SpawnPlayerCharacter(PlayerStartPIE->GetTransform());
+			APlayerCharacter* NewCharacter = (APlayerCharacter*) RespawnAsPawn(PlayersToSpawn[0], PlayerCharacterClass, PlayerStartPIE->GetTransform(), false);
 			AliveCharacters.Add(NewCharacter);
 
 			GrantStartingItems(NewCharacter);
 
-			PlayersToSpawn[0]->ClientSetRotation(NewCharacter->GetActorRotation());
+			PlayersToSpawn[0]->ClientSetRotation(PlayerStartPIE->GetTransform().Rotator());
 			PlayersToSpawn[0]->Possess(NewCharacter);
 
 			PlayersToSpawn.RemoveAt(0);
@@ -296,8 +290,7 @@ void ABRGameMode::RestartGame()
 		if (!PlayerCharacter->GetIsDead())
 		{
 			if (ABRPlayerController* BRPlayerController = dynamic_cast<ABRPlayerController*>(PlayerCharacter->GetController())) {
-				ASpectator* Spectator = SpawnSpectator(PlayerCharacter->GetCameraTransform());
-				BRPlayerController->Possess(Spectator);
+				RespawnAsPawn(BRPlayerController, PlayerSpectatorClass, PlayerCharacter->GetCameraTransform());
 			}
 		}
 
@@ -336,8 +329,7 @@ void ABRGameMode::OnPlayerCharacterDied(APlayerCharacter* PlayerCharacter, ACont
 		if (Controller)
 		{
 			if (ABRPlayerController* BRPlayerController = dynamic_cast<ABRPlayerController*>(Controller)) {
-				ASpectator* Spectator = SpawnSpectator(PlayerCharacter->GetCameraTransform());
-				BRPlayerController->Possess(Spectator);
+				RespawnAsPawn(BRPlayerController, PlayerSpectatorClass, PlayerCharacter->GetCameraTransform());
 			}
 		}
 

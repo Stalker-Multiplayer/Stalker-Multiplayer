@@ -41,12 +41,4 @@ private:
 		TArray<AActor*> AllPlayerStarts;
 
 
-// ------------------------------------------------------------------------- Functions --------------------------------------------------------------------------
-
-public:
-
-	UFUNCTION()
-		void RespawnAsPawn(ATestPlayerController* PlayerController, TSubclassOf<APawn> PawnClass, FTransform SpawnTransform);
-
-
 };
