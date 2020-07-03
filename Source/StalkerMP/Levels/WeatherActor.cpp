@@ -277,10 +277,20 @@ void AWeatherActor::ApplyCurrentWeatherTimeline(float Val)
 		NextWeatherName = CurrentWeatherNames[1];
 	}
 
-	/*GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Current : " + CurrentWeather.StartTime.ToString());
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Next : " + NextWeather.StartTime.ToString());
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "CurrentTime : " + FString::SanitizeFloat(CurrentTime));
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Val : " + FString::SanitizeFloat(Val));*/
+	/*if (HasAuthority())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Current : " + CurrentWeather.StartTime.ToString());
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Next : " + NextWeather.StartTime.ToString());
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "CurrentTime : " + FString::SanitizeFloat(CurrentTime));
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Val : " + FString::SanitizeFloat(Val));
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Current : " + CurrentWeather.StartTime.ToString());
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Next : " + NextWeather.StartTime.ToString());
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "CurrentTime : " + FString::SanitizeFloat(CurrentTime));
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Val : " + FString::SanitizeFloat(Val));
+	}*/
 
 	CurrentTime = Val;
 
@@ -423,7 +433,7 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int Seed, FTimecode
 			float SecondsTillNextDay = USMPFunctions::SECONDS_IN_DAY - CurrentTime;
 			SecondsTillNextDay = (SecondsTillNextDay / (SecondsTillNextDay + FinalTimeInSeconds)) * SecondsForChange;
 
-			ChangingTimeRichCurve.AddKey(SecondsTillNextDay - 0.000001f, USMPFunctions::SECONDS_IN_DAY);
+			ChangingTimeRichCurve.AddKey(SecondsTillNextDay - 0.0001f, USMPFunctions::SECONDS_IN_DAY);
 			if (FinalTimeInSeconds != 0)
 			{
 				ChangingTimeRichCurve.AddKey(InitialPosition + SecondsTillNextDay, 0);
