@@ -98,7 +98,10 @@ private:
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		UStaticMeshComponent* StaticMeshComponent;
+		UStaticMeshComponent* StaticMeshOutside;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		UStaticMeshComponent* StaticMeshInside;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		TArray<FVector4> SIZE_WAIT_SHRINK_DAMAGE;

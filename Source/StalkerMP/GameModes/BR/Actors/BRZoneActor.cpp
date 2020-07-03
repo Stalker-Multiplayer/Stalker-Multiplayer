@@ -29,15 +29,25 @@ ABRZoneActor::ABRZoneActor()
 	SetReplicates(true);
 	NetCullDistanceSquared = 40000000000.0;
 
-	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
-	StaticMeshComponent->SetCollisionProfileName("Zone");
-	StaticMeshComponent->SetEnableGravity(false);
-	StaticMeshComponent->bApplyImpulseOnDamage = false;
-	StaticMeshComponent->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	StaticMeshComponent->SetCanEverAffectNavigation(false);
-	StaticMeshComponent->bCastStaticShadow = false;
-	StaticMeshComponent->SetCastShadow(false);
-	RootComponent = StaticMeshComponent;
+	StaticMeshOutside = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshOutside"));
+	StaticMeshOutside->SetCollisionProfileName("NoCollision");
+	StaticMeshOutside->SetEnableGravity(false);
+	StaticMeshOutside->bApplyImpulseOnDamage = false;
+	StaticMeshOutside->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	StaticMeshOutside->SetCanEverAffectNavigation(false);
+	StaticMeshOutside->bCastStaticShadow = false;
+	StaticMeshOutside->SetCastShadow(false);
+	RootComponent = StaticMeshOutside;
+
+	StaticMeshInside = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshInside"));
+	StaticMeshInside->SetCollisionProfileName("NoCollision");
+	StaticMeshInside->SetEnableGravity(false);
+	StaticMeshInside->bApplyImpulseOnDamage = false;
+	StaticMeshInside->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	StaticMeshInside->SetCanEverAffectNavigation(false);
+	StaticMeshInside->bCastStaticShadow = false;
+	StaticMeshInside->SetCastShadow(false);
+	StaticMeshInside->SetupAttachment(StaticMeshOutside);
 }
 
 void ABRZoneActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -54,11 +64,6 @@ void ABRZoneActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 void ABRZoneActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (!HasAuthority())
-	{
-		StaticMeshComponent->SetCollisionProfileName("NoCollision");
-	}
 
 	ZoneTimeline = NewObject<UTimelineComponent>(this, FName("ZoneTimeline"));
 	ZoneTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
