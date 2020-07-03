@@ -34,7 +34,7 @@ void UPlayerCharacterAnimation::NativeUpdateAnimation(float DeltaTimeX)
 
 void UPlayerCharacterAnimation::OnStepLeft()
 {
-	if (!PlayerCharacter->IsFalling())
+	if (!PlayerCharacter->HasAuthority() && !PlayerCharacter->IsFalling())
 	{
 		FVector FootLocation = GetLeftFootLocation();
 		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation, FRotator(0, 0, 0), PlayerCharacter->GetMovingSpeedScale());
@@ -43,7 +43,7 @@ void UPlayerCharacterAnimation::OnStepLeft()
 
 void UPlayerCharacterAnimation::OnStepRight()
 {
-	if (!PlayerCharacter->IsFalling())
+	if (!PlayerCharacter->HasAuthority() && !PlayerCharacter->IsFalling())
 	{
 		FVector FootLocation = GetRightFootLocation();
 		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation, FRotator(0, 0, 0), PlayerCharacter->GetMovingSpeedScale());
@@ -52,10 +52,13 @@ void UPlayerCharacterAnimation::OnStepRight()
 
 void UPlayerCharacterAnimation::OnLanded()
 {
-	FVector FootLocation = GetLeftFootLocation();
-	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation);
-	FootLocation = GetRightFootLocation();
-	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation);
+	if (!PlayerCharacter->HasAuthority())
+	{
+		FVector FootLocation = GetLeftFootLocation();
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation);
+		FootLocation = GetRightFootLocation();
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation);
+	}
 }
 
 USoundBase* UPlayerCharacterAnimation::GetStepSound()

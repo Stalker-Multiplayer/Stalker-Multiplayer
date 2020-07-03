@@ -38,6 +38,36 @@ public:
 
 // ------------------------------------------------------------------------- Properties --------------------------------------------------------------------------
 
+private:
+
+	UPROPERTY()
+		UTextureRenderTarget2D* TerrainMaskRenderTarget;
+
+
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+		UTexture2D* TerrainMask;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+		TEnumAsByte<EPhysicalSurface> PhysSurface_Red;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+		TEnumAsByte<EPhysicalSurface> PhysSurface_GreenPositive;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+		TEnumAsByte<EPhysicalSurface> PhysSurface_GreenNegative;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+		TEnumAsByte<EPhysicalSurface> PhysSurface_Blue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+		TEnumAsByte<EPhysicalSurface> PhysSurface_Alpha;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+		float GreenThreshold = 0;
+
+
 public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -58,6 +88,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
 		FVector2D MapTextureOffset = FVector2D(0, 0);
 
+
+
+
+// ------------------------------------------------------------------------- Functions --------------------------------------------------------------------------
+
+private:
+
+	UFUNCTION()
+		void MapTerrainToPhysSurfaces();
+
+
+public:
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		TEnumAsByte<EPhysicalSurface> GetSurfaceAt(FHitResult HitResult);
 
 
 };
