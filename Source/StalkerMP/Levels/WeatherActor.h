@@ -136,6 +136,9 @@ private:
 		FWeatherTimeOfDayData CurrentWeather;
 
 	UPROPERTY()
+		bool WeatherDataIsReady = false;
+
+	UPROPERTY()
 		float WeatherLerpValue = 0;
 
 	UPROPERTY()

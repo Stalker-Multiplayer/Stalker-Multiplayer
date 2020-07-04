@@ -250,20 +250,26 @@ void AWeatherActor::OnEverythingReplicated()
 		CurrentWeatherName = CurrentWeatherNames[0];
 		NextWeather = CurrentWeatherDatas[1];
 		NextWeatherName = CurrentWeatherNames[1];
+		WeatherDataIsReady = true;
 		ApplyCurrentWeatherTimeline(CurrentTime);
 	}
 }
 
 void AWeatherActor::ApplyCurrentWeatherTimeline(float Val)
 {
-	if (CurrentWeatherDatas.Num() < 2)
+	if (!WeatherDataIsReady || CurrentWeatherDatas.Num() < 2)
 	{
 		return;
 	}
 
-	if ((USMPFunctions::TimecodeToSeconds(NextWeather.StartTime) <= Val && USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) < USMPFunctions::TimecodeToSeconds(NextWeather.StartTime))
-		||
-		(CurrentTime > Val && USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) > USMPFunctions::TimecodeToSeconds(NextWeather.StartTime)))
+	while (CurrentWeatherDatas.Num() > 2
+		&& (
+			(USMPFunctions::TimecodeToSeconds(NextWeather.StartTime) <= Val
+				&& USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) < USMPFunctions::TimecodeToSeconds(NextWeather.StartTime))
+			||
+			(CurrentTime > Val
+				&& USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) > USMPFunctions::TimecodeToSeconds(NextWeather.StartTime)))
+		)
 	{
 		if (CurrentWeatherDatas.Num() > 2)
 		{
@@ -275,22 +281,9 @@ void AWeatherActor::ApplyCurrentWeatherTimeline(float Val)
 		CurrentWeatherName = CurrentWeatherNames[0];
 		NextWeather = CurrentWeatherDatas[1];
 		NextWeatherName = CurrentWeatherNames[1];
-	}
 
-	/*if (HasAuthority())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Current : " + CurrentWeather.StartTime.ToString());
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Next : " + NextWeather.StartTime.ToString());
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "CurrentTime : " + FString::SanitizeFloat(CurrentTime));
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "Val : " + FString::SanitizeFloat(Val));
+		CurrentTime = Val;
 	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Current : " + CurrentWeather.StartTime.ToString());
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Next : " + NextWeather.StartTime.ToString());
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "CurrentTime : " + FString::SanitizeFloat(CurrentTime));
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "Val : " + FString::SanitizeFloat(Val));
-	}*/
 
 	CurrentTime = Val;
 
@@ -309,10 +302,6 @@ void AWeatherActor::Update(FTimecode Time, FWeatherTimeOfDayData WeatherData, FW
 	float CurrentTimeOffset = USMPFunctions::TimecodeToSeconds(Time) - USMPFunctions::TimecodeToSeconds(WeatherData.StartTime);
 	float WeatherTimeDiff = NextWeatherTime - USMPFunctions::TimecodeToSeconds(WeatherData.StartTime);
 	WeatherLerpValue = WeatherTimeDiff == 0 ? 0 : CurrentTimeOffset / WeatherTimeDiff;
-
-	/*GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, Time.ToString());
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, WeatherData.StartTime.ToString());
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, NextWeatherData.StartTime.ToString());*/
 
 	FRotator SunRotation = FRotator(UKismetMathLibrary::Lerp(WeatherData.SunLongitude, NextWeatherData.SunLongitude, WeatherLerpValue), 0, 0);
 	FRotator SunAltitudeRotation = FRotator(0, UKismetMathLibrary::Lerp(WeatherData.SunAltitude, NextWeatherData.SunAltitude, WeatherLerpValue), 0);
@@ -392,6 +381,9 @@ void AWeatherActor::AddTime(FTimecode Time, int SecondsForChange)
 
 void AWeatherActor::Multicast_GenerateWeather_Implementation(int Seed, FTimecode FinalTime, int SecondsForChange, bool ForceNextDay, const TArray<FString> &TheAllowedWeathers)
 {
+	WeatherDataIsReady = false;
+
+	ChangingWeatherTimeline->Stop();
 	int FinalTimeInSeconds = USMPFunctions::TimecodeToSeconds(FinalTime);
 
 	FRandomStream RandomStream = FRandomStream(Seed);
@@ -433,9 +425,10 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int Seed, FTimecode
 			float SecondsTillNextDay = USMPFunctions::SECONDS_IN_DAY - CurrentTime;
 			SecondsTillNextDay = (SecondsTillNextDay / (SecondsTillNextDay + FinalTimeInSeconds)) * SecondsForChange;
 
-			ChangingTimeRichCurve.AddKey(SecondsTillNextDay - 0.0001f, USMPFunctions::SECONDS_IN_DAY);
+			FKeyHandle ZeroKey = ChangingTimeRichCurve.AddKey(SecondsTillNextDay - 0.0001f, USMPFunctions::SECONDS_IN_DAY);
 			if (FinalTimeInSeconds != 0)
 			{
+				ChangingTimeRichCurve.SetKeyInterpMode(ZeroKey, ERichCurveInterpMode::RCIM_Constant);
 				ChangingTimeRichCurve.AddKey(InitialPosition + SecondsTillNextDay, 0);
 			}
 		}
@@ -479,6 +472,8 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int Seed, FTimecode
 	ChangingTimeCurve->FloatCurve = ChangingTimeRichCurve;
 	ChangingWeatherTimeline->SetTimelineLength(TimelineLength);
 	ChangingWeatherTimeline->SetPlaybackPosition(InitialPosition, true, true);
+
+	WeatherDataIsReady = true;
 }
 
 FString AWeatherActor::CalculateNextWeatherName(FRandomStream RandomStream, const TArray<FString> &TheAllowedWeathers)
