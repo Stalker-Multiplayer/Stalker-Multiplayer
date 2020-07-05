@@ -111,6 +111,15 @@ private:
 		bool bLeanRightPressed = false;
 
 	UPROPERTY()
+		float StandCrouchCameraDiff = 30;
+
+	UPROPERTY()
+		float CameraCrouchLerp = 0;
+
+	UPROPERTY()
+		float TargetCameraCrouchLerp = 0;
+
+	UPROPERTY()
 		float LeanAngle = 0;
 
 	UPROPERTY(Replicated)
@@ -184,9 +193,6 @@ protected:
 		FName WeaponSocketName = "weapon_socket";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		FName CameraSocketName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		FName MounthSocketName;
 
 
@@ -254,6 +260,15 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Transformation")
 		FRotator LookRotator = FRotator();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Transformation")
+		FVector StandingCameraOffset = FVector(0, 0, 80);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Transformation")
+		FVector CrouchingCameraOffset = FVector(0, 0, 40);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Transformation")
+		float SecondsToCrouch = 0.3;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Transformation")
 		float MaxLeanAngle = 30;
@@ -413,7 +428,7 @@ private:
 		void ApplyMovement();
 
 	UFUNCTION()
-		void UpdateLeanAngle(float DeltaTime);
+		void UpdateAngles(float DeltaTime);
 
 	UFUNCTION()
 		void UpdateLookRotatorForRemote();

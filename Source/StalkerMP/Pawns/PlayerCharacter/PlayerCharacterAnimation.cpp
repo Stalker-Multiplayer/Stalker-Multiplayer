@@ -5,6 +5,7 @@
 #include "StalkerMP/DataClasses/GlobalEnums.h"
 #include "StalkerMP/Pawns/PlayerCharacter/PlayerCharacter.h"
 
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -32,21 +33,11 @@ void UPlayerCharacterAnimation::NativeUpdateAnimation(float DeltaTimeX)
 	}
 }
 
-void UPlayerCharacterAnimation::OnStepLeft()
+void UPlayerCharacterAnimation::OnStep()
 {
 	if (!PlayerCharacter->HasAuthority() && !PlayerCharacter->IsFalling())
 	{
-		FVector FootLocation = GetLeftFootLocation();
-		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation, FRotator(0, 0, 0), PlayerCharacter->GetMovingSpeedScale());
-	}
-}
-
-void UPlayerCharacterAnimation::OnStepRight()
-{
-	if (!PlayerCharacter->HasAuthority() && !PlayerCharacter->IsFalling())
-	{
-		FVector FootLocation = GetRightFootLocation();
-		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation, FRotator(0, 0, 0), PlayerCharacter->GetMovingSpeedScale());
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), GetStepSoundLocation(), FRotator(0, 0, 0), PlayerCharacter->GetMovingSpeedScale());
 	}
 }
 
@@ -54,10 +45,8 @@ void UPlayerCharacterAnimation::OnLanded()
 {
 	if (!PlayerCharacter->HasAuthority())
 	{
-		FVector FootLocation = GetLeftFootLocation();
-		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation);
-		FootLocation = GetRightFootLocation();
-		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), FootLocation);
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), GetStepSoundLocation());
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), GetStepSound(), GetStepSoundLocation());
 	}
 }
 
@@ -80,14 +69,10 @@ USoundBase* UPlayerCharacterAnimation::GetStepSound()
 	}
 }
 
-FVector UPlayerCharacterAnimation::GetLeftFootLocation()
+FVector UPlayerCharacterAnimation::GetStepSoundLocation()
 {
-	return PlayerCharacter->GetMesh()->GetSocketLocation(LeftFootSocketName);
-}
-
-FVector UPlayerCharacterAnimation::GetRightFootLocation()
-{
-	return PlayerCharacter->GetMesh()->GetSocketLocation(RightFootSocketName);
+	return PlayerCharacter->GetCapsuleComponent()->GetComponentLocation()
+		- FVector(0, 0, PlayerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 }
 
 void UPlayerCharacterAnimation::UpdateMovingMode()

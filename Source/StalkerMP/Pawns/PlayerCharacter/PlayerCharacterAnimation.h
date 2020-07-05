@@ -102,12 +102,6 @@ protected:
 		bool IsDoingLongAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-		FName LeftFootSocketName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-		FName RightFootSocketName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 		USoundBase* FallbackStepSound;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
@@ -182,17 +176,11 @@ protected:
 	UFUNCTION()
 		USoundBase* GetStepSound();
 
-	UFUNCTION(BlueprintCallable)
-		void OnStepLeft();
-
-	UFUNCTION(BlueprintCallable)
-		void OnStepRight();
-
 	UFUNCTION(BlueprintPure, BlueprintCosmetic)
-		FVector GetLeftFootLocation();
+		FVector GetStepSoundLocation();
 
-	UFUNCTION(BlueprintPure, BlueprintCosmetic)
-		FVector GetRightFootLocation();
+	UFUNCTION(BlueprintCallable)
+		void OnStep();
 
 	UFUNCTION(BlueprintImplementableEvent)
 		EPhysicalSurface GetSurfaceType(bool& IsOnGround);

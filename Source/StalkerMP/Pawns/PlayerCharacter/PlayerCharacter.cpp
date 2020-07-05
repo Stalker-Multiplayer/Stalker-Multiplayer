@@ -62,18 +62,18 @@ APlayerCharacter::APlayerCharacter()
 	PlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	PlayerCamera->PrimaryComponentTick.bCanEverTick = false;
 	PlayerCamera->PrimaryComponentTick.bStartWithTickEnabled = false;
-	PlayerCamera->SetupAttachment(Cast<USceneComponent>(GetMesh()));
-	PlayerCamera->SetRelativeLocationAndRotation(FVector(-0.0013287, -0.0249375, -0.0177013), FRotator(49.9662209, -89.3099365, -181.2626801));
+	PlayerCamera->SetRelativeLocationAndRotation(FVector(0, 0, 80), FRotator(0, 0, 0));
 	PlayerCamera->bUsePawnControlRotation = true;
+	PlayerCamera->SetupAttachment(GetCapsuleComponent());
 
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
 	FirstPersonMesh->SetOnlyOwnerSee(true);
-	FirstPersonMesh->SetupAttachment(PlayerCamera);
 	FirstPersonMesh->bCastDynamicShadow = false;
 	FirstPersonMesh->CastShadow = true;
 	FirstPersonMesh->bSelfShadowOnly = true;
 	FirstPersonMesh->SetRelativeRotation(FRotator(0, 90, 0));
 	FirstPersonMesh->SetRelativeLocation(FVector(0, 0, -20));
+	FirstPersonMesh->SetupAttachment(PlayerCamera);
 
 	ActionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("PickupSphere"));
 	ActionSphere->PrimaryComponentTick.bCanEverTick = false;
@@ -189,13 +189,12 @@ void APlayerCharacter::BeginPlay()
 		GetWorld()->GetTimerManager().SetTimer(ItemLocationUpdateTimerHandle, this, &APlayerCharacter::UpdateItemsLocation, 1.0, true);
 	}
 
-	FAttachmentTransformRules AttachmentTransformRules = FAttachmentTransformRules(EAttachmentRule::KeepRelative, true);
-	PlayerCamera->AttachToComponent(GetMesh(), AttachmentTransformRules, CameraSocketName);
-
 	InventoryComponent->SetPlayerCharacter(this);
 	InventoryComponent->SetPickupSphere(ActionSphere);
 	GetMesh()->SetSkeletalMesh(DefaultCharacterMesh, false);
 	FirstPersonMesh->SetSkeletalMesh(DefaultHandsMesh, false);
+
+	StandCrouchCameraDiff = GetCapsuleComponent()->GetScaledCapsuleHalfHeight() - ((UCharacterMovementComponent*) GetMovementComponent())->CrouchedHalfHeight;
 
 	UpdateMovingMode();
 }
@@ -216,7 +215,7 @@ void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
-	UpdateLeanAngle(DeltaSeconds);
+	UpdateAngles(DeltaSeconds);
 
 	if (JustLandedSpeedScale < 1)
 	{
@@ -466,8 +465,9 @@ void APlayerCharacter::ApplyMovement()
 	}
 }
 
-void APlayerCharacter::UpdateLeanAngle(float DeltaTime)
+void APlayerCharacter::UpdateAngles(float DeltaTime)
 {
+	bool LeanAngleChanged = false;
 	if (LeanAngle != TargetLeanAngle)
 	{
 		float Diff = LeanAngle - TargetLeanAngle;
@@ -489,6 +489,55 @@ void APlayerCharacter::UpdateLeanAngle(float DeltaTime)
 		{
 			FirstPersonMesh->SetRelativeTransform(FTransform(BaseFirstPersonMeshTransform.Rotator() + FRotator(LeanAngle * 0.66, 0, 0),
 				BaseFirstPersonMeshTransform.GetTranslation().RotateAngleAxis(-LeanAngle * 0.66, FVector::ForwardVector), BaseFirstPersonMeshTransform.GetScale3D()));
+		}
+
+		LeanAngleChanged = true;
+	}
+
+	//if (IsLocallyControlled())
+	{
+		bool CameraOffsetChanged = false;
+		FVector CameraLocationOffset = UKismetMathLibrary::VLerp(StandingCameraOffset, CrouchingCameraOffset, CameraCrouchLerp);
+		if (CameraCrouchLerp < TargetCameraCrouchLerp)
+		{
+			float LerpChange = DeltaTime / SecondsToCrouch;
+			CameraCrouchLerp += LerpChange;
+			if (CameraCrouchLerp > TargetCameraCrouchLerp)
+			{
+				CameraCrouchLerp = TargetCameraCrouchLerp;
+			}
+
+			CameraLocationOffset = UKismetMathLibrary::VLerp(StandingCameraOffset, CrouchingCameraOffset, CameraCrouchLerp);
+			CameraOffsetChanged = true;
+		}
+		else if (CameraCrouchLerp > TargetCameraCrouchLerp)
+		{
+			float LerpChange = DeltaTime / SecondsToCrouch;
+			CameraCrouchLerp -= LerpChange;
+			if (CameraCrouchLerp < TargetCameraCrouchLerp)
+			{
+				CameraCrouchLerp = TargetCameraCrouchLerp;
+			}
+
+			CameraLocationOffset = UKismetMathLibrary::VLerp(StandingCameraOffset, CrouchingCameraOffset, CameraCrouchLerp);
+			CameraOffsetChanged = true;
+		}
+
+		if (LeanAngleChanged || CameraOffsetChanged)
+		{
+			float Sin = UKismetMathLibrary::Sin(UKismetMathLibrary::DegreesToRadians(LeanAngle));
+			float Cos = UKismetMathLibrary::Cos(UKismetMathLibrary::DegreesToRadians(LeanAngle));
+			CameraLocationOffset = FVector(0, CameraLocationOffset.Z * Sin + CameraLocationOffset.Y * Cos, CameraLocationOffset.Z * Cos - CameraLocationOffset.Y * Sin);
+
+			if (bIsCrouched)
+			{
+				CameraLocationOffset += FVector(0, 0, StandCrouchCameraDiff * (1 - CameraCrouchLerp));
+			}
+			else
+			{
+				CameraLocationOffset -= FVector(0, 0, StandCrouchCameraDiff * CameraCrouchLerp);
+			}
+			PlayerCamera->SetRelativeLocation(CameraLocationOffset);
 		}
 	}
 }
@@ -554,6 +603,7 @@ void APlayerCharacter::CallCrouch()
 {
 	bCrouchActionPressed = true;
 	Crouch(true);
+	TargetCameraCrouchLerp = 1;
 	UpdateMovingMode();
 }
 
@@ -561,6 +611,7 @@ void APlayerCharacter::CallUnCrouch()
 {
 	bCrouchActionPressed = false;
 	UnCrouch(true);
+	TargetCameraCrouchLerp = 0;
 	UpdateMovingMode();
 }
 
