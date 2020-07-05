@@ -287,7 +287,7 @@ private:
 		void ApplyCurrentWeatherTimeline(float Val);
 
 	UFUNCTION()
-		FString CalculateNextWeatherName(FRandomStream RandomStream, const TArray<FString> &TheAllowedWeathers);
+		FString CalculateNextWeatherName(FRandomStream &RandomStream, const TArray<FString> &TheAllowedWeathers);
 
 	UFUNCTION()
 		FWeatherTimeOfDayData FindWeatherData(FTimecode Time, FString WeatherType);

@@ -262,7 +262,7 @@ void AWeatherActor::ApplyCurrentWeatherTimeline(float Val)
 		return;
 	}
 
-	while (CurrentWeatherDatas.Num() > 2
+	while (CurrentWeatherDatas.Num() >= 2
 		&& (
 			(USMPFunctions::TimecodeToSeconds(NextWeather.StartTime) <= Val
 				&& USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) < USMPFunctions::TimecodeToSeconds(NextWeather.StartTime))
@@ -441,7 +441,6 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int Seed, FTimecode
 		CurrentWeatherNames.Add(NextWeatherName);
 
 		CurrentWeather = NextWeather;
-		NextWeatherName = CurrentWeatherName;
 		while (WillBeNextDay || USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) < FinalTimeInSeconds)
 		{
 			NextWeatherName = CalculateNextWeatherName(RandomStream, TheAllowedWeathers);
@@ -471,12 +470,12 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int Seed, FTimecode
 
 	ChangingTimeCurve->FloatCurve = ChangingTimeRichCurve;
 	ChangingWeatherTimeline->SetTimelineLength(TimelineLength);
-	ChangingWeatherTimeline->SetPlaybackPosition(InitialPosition, true, true);
 
 	WeatherDataIsReady = true;
+	ChangingWeatherTimeline->SetPlaybackPosition(InitialPosition, true, true);
 }
 
-FString AWeatherActor::CalculateNextWeatherName(FRandomStream RandomStream, const TArray<FString> &TheAllowedWeathers)
+FString AWeatherActor::CalculateNextWeatherName(FRandomStream &RandomStream, const TArray<FString> &TheAllowedWeathers)
 {
 	TArray<FNextPossibleWeather> NextPossibleWeathers = WeatherTypes[NextWeatherName].NextPossibleWeathers
 		.FilterByPredicate([&TheAllowedWeathers](const FNextPossibleWeather& NextPossibleWeather)
