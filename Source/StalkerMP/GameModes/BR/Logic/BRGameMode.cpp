@@ -33,7 +33,6 @@ const FString ABRGameMode::LATEST_START_TIME_SETTING_KEY = "BR_LatestPossibleTim
 const FString ABRGameMode::GAME_TIME_PASS_SETTING_KEY = "BR_TimeOfDayPassUntilZeroSize";
 
 
-// Called when the game starts or when spawned
 void ABRGameMode::OnGamemodeLevelLoaded()
 {
 	Super::OnGamemodeLevelLoaded();
@@ -43,7 +42,7 @@ void ABRGameMode::OnGamemodeLevelLoaded()
 	RestartGameDelay = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, POST_FINISH_RESET_DELAY_SETTING_KEY, RestartGameDelay);
 
 	EarliestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, EARLIEST_START_TIME_SETTING_KEY, "07:00:00"));
-	LatestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, LATEST_START_TIME_SETTING_KEY, "17:00:00"));
+	LatestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, LATEST_START_TIME_SETTING_KEY, "16:00:00"));
 	GameTimePass = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, GAME_TIME_PASS_SETTING_KEY, "3:00:00"));
 	GameTimePass = FTimecode(GameTimePass.Hours * 2, GameTimePass.Minutes * 2, GameTimePass.Seconds * 2, 0, false);
 
@@ -232,8 +231,8 @@ void ABRGameMode::StartGame()
 
 				GrantStartingItems(NewCharacter);
 
-				PlayersToSpawn[0]->ClientSetRotation(PlayerStart->GetTransform().Rotator());
 				PlayersToSpawn[0]->Possess(NewCharacter);
+				PlayersToSpawn[0]->ClientSetRotation(PlayerStart->GetTransform().Rotator());
 
 				PlayersToSpawn.RemoveAt(0);
 				AllPlayerStarts.Remove(PlayerStart);
@@ -249,8 +248,8 @@ void ABRGameMode::StartGame()
 
 			GrantStartingItems(NewCharacter);
 
-			PlayersToSpawn[0]->ClientSetRotation(PlayerStartPIE->GetTransform().Rotator());
 			PlayersToSpawn[0]->Possess(NewCharacter);
+			PlayersToSpawn[0]->ClientSetRotation(PlayerStartPIE->GetTransform().Rotator());
 
 			PlayersToSpawn.RemoveAt(0);
 		}

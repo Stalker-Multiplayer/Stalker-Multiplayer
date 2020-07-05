@@ -93,8 +93,8 @@ APawn* ABaseGameMode::RespawnAsPawn(ABasePlayerController* PlayerController, TSu
 
 	if (AutoPossess)
 	{
-		PlayerController->ClientSetRotation(SpawnTransform.Rotator());
 		PlayerController->Possess(Pawn);
+		PlayerController->ClientSetRotation(SpawnTransform.Rotator());
 	}
 
 	return Pawn;

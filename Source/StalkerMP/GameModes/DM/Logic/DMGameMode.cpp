@@ -28,7 +28,7 @@ const FString ADMGameMode::GAME_START_DELAY_SETTING_KEY = "DM_GameStartDelay";
 const FString ADMGameMode::POST_FINISH_RESET_DELAY_SETTING_KEY = "DM_PostFinishResetDelay";
 const FString ADMGameMode::TIME_LIMIT = "DM_TimeLimit";
 const FString ADMGameMode::SCORE_LIMIT = "DM_ScoreLimit";
-const FString ADMGameMode::DEAD_BODY_REMOVE_DELAY = "DM_DeadBodyRemoveDelay";
+const FString ADMGameMode::RESPAWN_DELAY = "DM_RespawnDelay";
 const FString ADMGameMode::DROPPED_ITEMS_REMOVE_DELAY = "DM_DroppedItemsRemoveDelay";
 const FString ADMGameMode::EARLIEST_START_TIME_SETTING_KEY = "DM_EarliestPossibleTimeOfDayForMatchStart";
 const FString ADMGameMode::LATEST_START_TIME_SETTING_KEY = "DM_LatestPossibleTimeOfDayForMatchStart";
@@ -54,7 +54,6 @@ void ADMGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	UInventoryComponent::OnItemDroppedDelegate.Remove(OnItemDroppedDelegate);
 }
 
-// Called when the game starts or when spawned
 void ADMGameMode::OnGamemodeLevelLoaded()
 {
 	Super::OnGamemodeLevelLoaded();
@@ -64,11 +63,11 @@ void ADMGameMode::OnGamemodeLevelLoaded()
 	RestartGameDelay = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, POST_FINISH_RESET_DELAY_SETTING_KEY, RestartGameDelay);
 	TimeLimit = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, TIME_LIMIT, TimeLimit);
 	ScoreLimit = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, SCORE_LIMIT, ScoreLimit);
-	DeadBodyRemoveDelay = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, DEAD_BODY_REMOVE_DELAY, DeadBodyRemoveDelay);
+	RespawnDelay = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, RESPAWN_DELAY, RespawnDelay);
 	DroppedItemsRemoveDelay = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, DROPPED_ITEMS_REMOVE_DELAY, DroppedItemsRemoveDelay);
 
 	EarliestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, EARLIEST_START_TIME_SETTING_KEY, "07:00:00"));
-	LatestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, LATEST_START_TIME_SETTING_KEY, "17:00:00"));
+	LatestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, LATEST_START_TIME_SETTING_KEY, "16:00:00"));
 	GameTimePass = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, GAME_TIME_PASS_SETTING_KEY, "3:00:00"));
 
 	GetGameState<ADMGameState>()->MinPlayersToStart = MinPlayersToStart;
@@ -93,7 +92,6 @@ FString ADMGameMode::GetGameModeName()
 void ADMGameMode::HandleStartingNewPlayer_Implementation(APlayerController* PlayerController)
 {
 	Super::HandleStartingNewPlayer_Implementation(PlayerController);
-
 	Map_RespawnPlayerTimerHandles.Add(PlayerController, FTimerHandle());
 
 	ADMGameState* DMGameState = GetGameState<ADMGameState>();
@@ -331,8 +329,8 @@ void ADMGameMode::RespawnPlayer(ADMPlayerController* PlayerController)
 
 		GrantStartingItems(NewCharacter);
 
-		PlayerController->ClientSetRotation(PlayerStart->GetTransform().Rotator());
 		PlayerController->Possess(NewCharacter);
+		PlayerController->ClientSetRotation(PlayerStart->GetTransform().Rotator());
 	}
 	else
 	{
@@ -340,8 +338,8 @@ void ADMGameMode::RespawnPlayer(ADMPlayerController* PlayerController)
 
 		GrantStartingItems(NewCharacter);
 
-		PlayerController->ClientSetRotation(PlayerStartPIE->GetTransform().Rotator());
 		PlayerController->Possess(NewCharacter);
+		PlayerController->ClientSetRotation(PlayerStartPIE->GetTransform().Rotator());
 	}
 }
 
@@ -357,9 +355,9 @@ void ADMGameMode::OnPlayerCharacterDied(APlayerCharacter* PlayerCharacter, ACont
 
 		FTimerDelegate TimerDelegate;
 		TimerDelegate.BindUFunction(this, FName("RespawnPlayer"), Controller);
-		GetWorld()->GetTimerManager().SetTimer(Map_RespawnPlayerTimerHandles[Controller], TimerDelegate, DeadBodyRemoveDelay, false, DeadBodyRemoveDelay);
+		GetWorld()->GetTimerManager().SetTimer(Map_RespawnPlayerTimerHandles[Controller], TimerDelegate, RespawnDelay, false, RespawnDelay);
 
-		PlayerCharacter->SetLifeSpan(DeadBodyRemoveDelay);
+		PlayerCharacter->SetLifeSpan(RespawnDelay);
 		DeadBodyBackpack->SetLifeSpan(DroppedItemsRemoveDelay);
 
 		if (InstigatedBy && InstigatedBy->GetPlayerState<ADMPlayerState>()->KillCount >= ScoreLimit)

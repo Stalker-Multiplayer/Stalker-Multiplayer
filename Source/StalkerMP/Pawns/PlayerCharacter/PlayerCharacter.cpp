@@ -900,7 +900,10 @@ void APlayerCharacter::Client_UpdateLookRotator_Implementation(float Pitch, floa
 
 FTransform APlayerCharacter::GetCameraTransform()
 {
-	return PlayerCamera->GetComponentTransform();
+	FTransform Transform = PlayerCamera->GetComponentTransform();
+	FRotator Rotator = GetControlRotation();
+	Transform.SetRotation(Rotator.Quaternion());
+	return Transform;
 }
 
 FVector APlayerCharacter::GetHorizontalVelocity()

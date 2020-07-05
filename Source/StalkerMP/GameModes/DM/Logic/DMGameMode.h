@@ -63,7 +63,7 @@ public:
 	static const FString POST_FINISH_RESET_DELAY_SETTING_KEY;
 	static const FString TIME_LIMIT;
 	static const FString SCORE_LIMIT;
-	static const FString DEAD_BODY_REMOVE_DELAY;
+	static const FString RESPAWN_DELAY;
 	static const FString DROPPED_ITEMS_REMOVE_DELAY;
 	static const FString EARLIEST_START_TIME_SETTING_KEY;
 	static const FString LATEST_START_TIME_SETTING_KEY;
@@ -145,7 +145,7 @@ protected:
 		int ScoreLimit = 30;
 
 	UPROPERTY(BlueprintReadOnly)
-		int DeadBodyRemoveDelay = 5;
+		int RespawnDelay = 5;
 
 	UPROPERTY(BlueprintReadOnly)
 		int DroppedItemsRemoveDelay = 10;
