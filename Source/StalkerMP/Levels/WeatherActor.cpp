@@ -368,7 +368,7 @@ void AWeatherActor::Update(FTimecode Time, FWeatherTimeOfDayData WeatherData, FW
 
 void AWeatherActor::SetTimeOfDay(FTimecode FinalTime, int SecondsForChange, bool ForceNextDay)
 {
-	Multicast_GenerateWeather(FMath::Rand(), FinalTime, SecondsForChange, ForceNextDay, AllowedWeathers);
+	Multicast_GenerateWeather(CurrentTime, FMath::Rand(), FinalTime, SecondsForChange, ForceNextDay, AllowedWeathers);
 }
 
 void AWeatherActor::AddTime(FTimecode Time, int SecondsForChange)
@@ -384,8 +384,9 @@ void AWeatherActor::AddTime(FTimecode Time, int SecondsForChange)
 	SetTimeOfDay(USMPFunctions::SecondsToTimecode(FinalSeconds), SecondsForChange, ForceNextDay);
 }
 
-void AWeatherActor::Multicast_GenerateWeather_Implementation(int Seed, FTimecode FinalTime, int SecondsForChange, bool ForceNextDay, const TArray<FString> &TheAllowedWeathers)
+void AWeatherActor::Multicast_GenerateWeather_Implementation(int StartTime, int Seed, FTimecode FinalTime, int SecondsForChange, bool ForceNextDay, const TArray<FString> &TheAllowedWeathers)
 {
+	CurrentTime = StartTime;
 	WeatherDataIsReady = false;
 
 	ChangingWeatherTimeline->Stop();

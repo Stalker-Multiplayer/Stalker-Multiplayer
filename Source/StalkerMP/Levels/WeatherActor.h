@@ -296,7 +296,7 @@ private:
 		FWeatherTimeOfDayData FindNextWeatherData(FTimecode Time, FString WeatherType);
 
 	UFUNCTION(NetMulticast, Reliable)
-		void Multicast_GenerateWeather(int Seed, FTimecode FinalTime, int SecondsForChange, bool ForceNextDay, const TArray<FString> &TheAllowedWeathers);
+		void Multicast_GenerateWeather(int StartTime, int Seed, FTimecode FinalTime, int SecondsForChange, bool ForceNextDay, const TArray<FString> &TheAllowedWeathers);
 
 
 protected:
