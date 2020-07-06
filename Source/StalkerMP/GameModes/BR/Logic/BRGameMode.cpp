@@ -116,7 +116,7 @@ void ABRGameMode::Logout(AController* Exiting)
 		if (GetWorld()->GetTimerManager().IsTimerActive(StartCountdownTimerHandle))
 		{
 			GetWorld()->GetTimerManager().ClearTimer(StartCountdownTimerHandle);
-			WeatherActor->PauseChangingWeather();
+			WeatherActor->Multicast_PauseChangingWeather();
 
 			GetGameState<ABRGameState>()->SetMatchState(EMatchState::InLobby);
 		}

@@ -337,11 +337,11 @@ public:
 	UFUNCTION()
 		int GetCurrentTime() { return CurrentTime; }
 
-	UFUNCTION()
-		void PauseChangingWeather();
+	UFUNCTION(NetMulticast, Reliable)
+		void Multicast_PauseChangingWeather();
 
-	UFUNCTION()
-		void ResumeChangingWeather();
+	UFUNCTION(NetMulticast, Reliable)
+		void Multicast_ResumeChangingWeather();
 
 	UFUNCTION()
 		void AttachRainToCamera(APlayerCameraManager* CameraManager);

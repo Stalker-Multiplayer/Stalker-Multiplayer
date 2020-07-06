@@ -143,8 +143,8 @@ void AWeatherActor::BeginPlay()
 	ChangingWeatherTimeline = NewObject<UTimelineComponent>(this, FName("WeatherTimeline"));
 	ChangingWeatherTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 	this->BlueprintCreatedComponents.Add(ChangingWeatherTimeline); // Add to array so it gets saved
-	ChangingWeatherTimeline->SetNetAddressable();	// This component has a stable name that can be referenced for replication
-	ChangingWeatherTimeline->SetIsReplicated(true);
+	//ChangingWeatherTimeline->SetNetAddressable();	// This component has a stable name that can be referenced for replication
+	//ChangingWeatherTimeline->SetIsReplicated(true);
 	ChangingWeatherTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_TimelineLength);
 	ChangingWeatherTimeline->SetDirectionPropertyName(FName("TimelineDirection"));
 	ChangingWeatherTimeline->SetLooping(false);
@@ -252,6 +252,7 @@ void AWeatherActor::OnEverythingReplicated()
 		NextWeatherName = CurrentWeatherNames[1];
 		WeatherDataIsReady = true;
 		ApplyCurrentWeatherTimeline(CurrentTime);
+		ChangingWeatherTimeline->Play();
 	}
 }
 
@@ -283,6 +284,11 @@ void AWeatherActor::ApplyCurrentWeatherTimeline(float Val)
 		NextWeatherName = CurrentWeatherNames[1];
 
 		CurrentTime = Val;
+
+		if (CurrentWeatherDatas.Num() <= 2)
+		{
+			break;
+		}
 	}
 
 	CurrentTime = Val;
@@ -363,7 +369,6 @@ void AWeatherActor::Update(FTimecode Time, FWeatherTimeOfDayData WeatherData, FW
 void AWeatherActor::SetTimeOfDay(FTimecode FinalTime, int SecondsForChange, bool ForceNextDay)
 {
 	Multicast_GenerateWeather(FMath::Rand(), FinalTime, SecondsForChange, ForceNextDay, AllowedWeathers);
-	ChangingWeatherTimeline->Play();
 }
 
 void AWeatherActor::AddTime(FTimecode Time, int SecondsForChange)
@@ -473,6 +478,7 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int Seed, FTimecode
 
 	WeatherDataIsReady = true;
 	ChangingWeatherTimeline->SetPlaybackPosition(InitialPosition, true, true);
+	ChangingWeatherTimeline->Play();
 }
 
 FString AWeatherActor::CalculateNextWeatherName(FRandomStream &RandomStream, const TArray<FString> &TheAllowedWeathers)
@@ -512,12 +518,12 @@ FString AWeatherActor::CalculateNextWeatherName(FRandomStream &RandomStream, con
 	return WeatherNames[UKismetMathLibrary::RandomInteger(WeatherNames.Num())];
 }
 
-void AWeatherActor::PauseChangingWeather()
+void AWeatherActor::Multicast_PauseChangingWeather_Implementation()
 {
 	ChangingWeatherTimeline->Stop();
 }
 
-void AWeatherActor::ResumeChangingWeather()
+void AWeatherActor::Multicast_ResumeChangingWeather_Implementation()
 {
 	ChangingWeatherTimeline->Play();
 }
