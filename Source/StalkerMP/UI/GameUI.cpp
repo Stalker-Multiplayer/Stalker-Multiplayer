@@ -84,12 +84,9 @@ void UGameUI::HideMap()
 	}
 }
 
-void UGameUI::OnPlayerDied(FString PlayerName, FString KilledName, bool KilledByMe, bool MeDied)
+void UGameUI::OnPlayerDied(FString PlayerName, FString KillerName, bool KilledByMe, bool MeDied)
 {
-	if (KilledByMe || MeDied)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(KilledPlayerVisibleTimerHandler);
-		GetWorld()->GetTimerManager().SetTimer(KilledPlayerVisibleTimerHandler, this, &UGameUI::HideDiedPlayer, KilledPlayerVisibilityTime, false);
-		OnPlayerDiedBP(PlayerName, KilledName, KilledByMe, MeDied);
-	}
+	GetWorld()->GetTimerManager().ClearTimer(KilledPlayerVisibleTimerHandler);
+	GetWorld()->GetTimerManager().SetTimer(KilledPlayerVisibleTimerHandler, this, &UGameUI::HideDiedPlayer, KilledPlayerVisibilityTime, false);
+	OnPlayerDiedBP(PlayerName, KillerName, KilledByMe, MeDied);
 }

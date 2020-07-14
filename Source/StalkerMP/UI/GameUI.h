@@ -49,7 +49,7 @@ protected:
 		UCanvasPanel* GetRootCanvas();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic)
-		void OnPlayerDiedBP(const FString &PlayerName, const FString &KilledName, bool KilledByMe, bool MeDied);
+		void OnPlayerDiedBP(const FString &PlayerName, const FString &KillerName, bool KilledByMe, bool MeDied);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic)
 		void HideDiedPlayer();

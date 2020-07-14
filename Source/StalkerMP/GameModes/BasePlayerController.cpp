@@ -380,9 +380,12 @@ void ABasePlayerController::OnPlayerCharacterDied(APlayerCharacter* PlayerCharac
 
 void ABasePlayerController::Client_OnPlayerDied_Implementation(const FString &PlayerName, const FString &KillerName, bool KilledByMe, bool MeDied)
 {
-	if (KilledByMe || MeDied)
+	if (BaseGameUI)
 	{
-		BaseGameUI->OnPlayerDied(PlayerName, KillerName, KilledByMe, MeDied);
+		if (KilledByMe || MeDied)
+		{
+			BaseGameUI->OnPlayerDied(PlayerName, KillerName, KilledByMe, MeDied);
+		}
 	}
 }
 

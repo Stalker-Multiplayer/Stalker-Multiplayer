@@ -252,7 +252,10 @@ void AWeatherActor::OnEverythingReplicated()
 		NextWeatherName = CurrentWeatherNames[1];
 		WeatherDataIsReady = true;
 		ApplyCurrentWeatherTimeline(CurrentTime);
-		ChangingWeatherTimeline->Play();
+		if (ChangingWeatherTimeline)
+		{
+			ChangingWeatherTimeline->Play();
+		}
 	}
 }
 
