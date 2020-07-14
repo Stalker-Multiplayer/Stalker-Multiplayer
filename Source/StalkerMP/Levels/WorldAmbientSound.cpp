@@ -30,6 +30,7 @@ void AWorldAmbientSound::Update(float NewWeatherLerp, float FadeTime)
 	if (NewWeatherLerp > 0 && !AudioComponent->IsActive())
 	{
 		AudioComponent->SetActive(true);
+		AudioComponent->AdjustVolume(0, 0.01, EAudioFaderCurve::Logarithmic);
 	}
 	if (NewWeatherLerp != Volume)
 	{
