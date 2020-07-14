@@ -125,8 +125,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis(ABasePlayerController::ACTION_TURN_RIGHT, this, &APlayerCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAxis(ABasePlayerController::ACTION_LOOK_UP, this, &APlayerCharacter::AddControllerPitchInput);
 
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_JUMP, IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_JUMP, IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_JUMP, IE_Pressed, this, &APlayerCharacter::CallJump);
+	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_JUMP, IE_Released, this, &APlayerCharacter::CallStopJumping);
 
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_CROUCH, IE_Pressed, this, &APlayerCharacter::CallCrouch);
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_CROUCH, IE_Released, this, &APlayerCharacter::CallUnCrouch);
@@ -495,7 +495,7 @@ void APlayerCharacter::UpdateLeanAngle(float DeltaTime)
 
 void APlayerCharacter::MoveForward(float Value)
 {
-	if (Controller)
+	if (Controller && !IsDead)
 	{
 		if (Value != 0.0f)
 		{
@@ -521,17 +521,33 @@ void APlayerCharacter::MoveForward(float Value)
 
 void APlayerCharacter::MoveRight(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f))
+	if (Controller && !IsDead)
 	{
-		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		if (Value != 0.0f)
+		{
+			// find out which way is right
+			const FRotator Rotation = Controller->GetControlRotation();
+			const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		// get right vector 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		// add movement in that direction
-		AddMovementInput(Direction, Value);
+			// get right vector 
+			const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+			// add movement in that direction
+			AddMovementInput(Direction, Value);
+		}
 	}
+}
+
+void APlayerCharacter::CallJump()
+{
+	if (Controller && !IsDead)
+	{
+		Jump();
+	}
+}
+
+void APlayerCharacter::CallStopJumping()
+{
+	StopJumping();
 }
 
 void APlayerCharacter::CallCrouch()

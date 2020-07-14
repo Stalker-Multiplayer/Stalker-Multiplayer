@@ -362,6 +362,12 @@ private:
 		void MoveRight(float Value);
 
 	UFUNCTION()
+		void CallJump();
+
+	UFUNCTION()
+		void CallStopJumping();
+
+	UFUNCTION()
 		void CallCrouch();
 
 	UFUNCTION()
