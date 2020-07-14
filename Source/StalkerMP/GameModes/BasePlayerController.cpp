@@ -80,6 +80,8 @@ const FString ABasePlayerController::MINIMAP_ICONS_SCALE_SETTING_KEY = "MinimapI
 const float ABasePlayerController::DEFAULT_MINIMAP_ICONS_SIZE = 1;
 const FString ABasePlayerController::MAP_ICONS_SCALE_SETTING_KEY = "MapIconsScale";
 const float ABasePlayerController::DEFAULT_MAP_ICONS_SIZE = 1;
+const FString ABasePlayerController::HIDE_UI_SETTING_KEY = "HideUI";
+const float ABasePlayerController::DEFAULT_HIDE_UI = 0;
 
 // Sensitivity
 const FString ABasePlayerController::HORIZONTAL_SENSITIVITY_SETTING_KEY = "HorizontalSensitivity";

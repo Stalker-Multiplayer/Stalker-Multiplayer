@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+
+#include "StalkerMP/UI/HideableWidget.h"
+
 #include "PlayerCharacterUI.generated.h"
 
 class APlayerCharacter;
@@ -11,7 +13,7 @@ class UCrosshairWidget;
 
 
 UCLASS()
-class STALKERMP_API UPlayerCharacterUI : public UUserWidget
+class STALKERMP_API UPlayerCharacterUI : public UHideableWidget
 {
 	GENERATED_BODY()
 

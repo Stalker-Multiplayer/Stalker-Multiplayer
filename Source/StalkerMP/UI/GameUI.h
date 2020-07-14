@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+
+#include "StalkerMP/UI/HideableWidget.h"
+
 #include "GameUI.generated.h"
 
 class UCanvasPanel;
@@ -14,7 +16,7 @@ class UMapWidget;
  * 
  */
 UCLASS()
-class STALKERMP_API UGameUI : public UUserWidget
+class STALKERMP_API UGameUI : public UHideableWidget
 {
 	GENERATED_BODY()
 

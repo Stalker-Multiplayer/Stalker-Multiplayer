@@ -124,6 +124,8 @@ void UMinimapWidget::OnFloatSettingUpdated(FString Key, float Value)
 
 void UMinimapWidget::OnIntSettingUpdated(FString Key, int Value)
 {
+	Super::OnIntSettingUpdated(Key, Value);
+
 	if (Key.Equals(ABasePlayerController::MINIMAP_SIZE_SETTING_KEY))
 	{
 		Size = Value;

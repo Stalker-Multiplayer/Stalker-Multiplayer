@@ -49,6 +49,14 @@ void UGeneralSettingsUI::NativeConstruct()
 		ESettingsType::General,
 		ABasePlayerController::MAP_ICONS_SCALE_SETTING_KEY,
 		ABasePlayerController::DEFAULT_MAP_ICONS_SIZE));
+
+
+	// Other
+
+	SetHideUI(GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(
+		ESettingsType::General,
+		ABasePlayerController::HIDE_UI_SETTING_KEY,
+		ABasePlayerController::DEFAULT_HIDE_UI));
 }
 
 
@@ -208,5 +216,13 @@ void UGeneralSettingsUI::SetMapIconsScale(float Scale)
 	OnMapIconsScaleUpdated(Scale);
 
 	GetGameInstance<UStalkerMPGameInstance>()->PutFloatSettingValue(ESettingsType::General, ABasePlayerController::MAP_ICONS_SCALE_SETTING_KEY, Scale);
+	GetGameInstance<UStalkerMPGameInstance>()->SaveSettings(ESettingsType::General);
+}
+
+void UGeneralSettingsUI::SetHideUI(bool HideUI)
+{
+	OnHideUIUpdated(HideUI);
+
+	GetGameInstance<UStalkerMPGameInstance>()->PutIntSettingValue(ESettingsType::General, ABasePlayerController::HIDE_UI_SETTING_KEY, HideUI ? 1 : 0);
 	GetGameInstance<UStalkerMPGameInstance>()->SaveSettings(ESettingsType::General);
 }

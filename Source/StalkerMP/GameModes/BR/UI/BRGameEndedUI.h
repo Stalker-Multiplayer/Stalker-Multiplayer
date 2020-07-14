@@ -3,14 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+
+#include "StalkerMP/UI/HideableWidget.h"
+
 #include "BRGameEndedUI.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class STALKERMP_API UBRGameEndedUI : public UUserWidget
+class STALKERMP_API UBRGameEndedUI : public UHideableWidget
 {
 	GENERATED_BODY()
 

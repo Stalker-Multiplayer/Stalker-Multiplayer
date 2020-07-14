@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+
+#include "StalkerMP/UI/HideableWidget.h"
+
 #include "MinimapWidget.generated.h"
 
 class ABasePlayerController;
@@ -16,7 +18,7 @@ class UImage;
  * 
  */
 UCLASS()
-class STALKERMP_API UMinimapWidget : public UUserWidget
+class STALKERMP_API UMinimapWidget : public UHideableWidget
 {
 	GENERATED_BODY()
 
@@ -25,11 +27,16 @@ class STALKERMP_API UMinimapWidget : public UUserWidget
 
 // ------------------------------------------------------------------------- Function Override --------------------------------------------------------------------------
 
+protected:
+
+	virtual void OnIntSettingUpdated(FString Key, int Value) override;
+
+
 public:
 
-	virtual void NativeConstruct();
-	virtual void NativeDestruct();
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime);
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 
 
@@ -69,9 +76,6 @@ private:
 
 	UFUNCTION()
 		void OnFloatSettingUpdated(FString Key, float Value);
-
-	UFUNCTION()
-		void OnIntSettingUpdated(FString Key, int Value);
 
 
 protected:

@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+
+#include "StalkerMP/UI/HideableWidget.h"
+
 #include "DMGameUI.generated.h"
 
 class ADMPlayerState;
@@ -13,7 +15,7 @@ class ADMPlayerController;
  * 
  */
 UCLASS()
-class STALKERMP_API UDMGameUI : public UUserWidget
+class STALKERMP_API UDMGameUI : public UHideableWidget
 {
 	GENERATED_BODY()
 	

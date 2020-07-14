@@ -107,6 +107,8 @@ public:
 	static const float DEFAULT_MINIMAP_ICONS_SIZE;
 	static const FString MAP_ICONS_SCALE_SETTING_KEY;
 	static const float DEFAULT_MAP_ICONS_SIZE;
+	static const FString HIDE_UI_SETTING_KEY;
+	static const float DEFAULT_HIDE_UI;
 
 	// Sensitivity
 	static const FString HORIZONTAL_SENSITIVITY_SETTING_KEY;

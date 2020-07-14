@@ -109,5 +109,11 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic)
 		void OnMapIconsScaleUpdated(float NewScale);
 
+	UFUNCTION(BlueprintCallable)
+		void SetHideUI(bool HideUI);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic)
+		void OnHideUIUpdated(bool HideUI);
+
 
 };
