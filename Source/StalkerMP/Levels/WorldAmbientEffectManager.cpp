@@ -28,19 +28,19 @@ void AWorldAmbientEffectManager::BeginPlay()
 		// Only add server effects to server manager and client effects to client manager
 		if ((GetNetMode() < ENetMode::NM_Client) == WorldAmbientEffect->GetIsReplicated())
 		{
-			for (FString WeatherName : WorldAmbientEffect->RequiredWeathers)
+			for (FString WeatherType : WorldAmbientEffect->RequiredWeathers)
 			{
-				if (!EffectsMap.Contains(WeatherName))
+				if (!EffectsMap.Contains(WeatherType))
 				{
-					EffectsMap.Add(WeatherName, FAmbientEffectsArray());
+					EffectsMap.Add(WeatherType, FAmbientEffectsArray());
 				}
 
-				EffectsMap[WeatherName].Effects.Add(WorldAmbientEffect);
+				EffectsMap[WeatherType].Effects.Add(WorldAmbientEffect);
 			}
 		}
 	}
 
-	EffectsMap.GetKeys(WeatherNames);
+	EffectsMap.GetKeys(WeatherTypes);
 }
 
 // TODO Optimize this. Find a better way than using .contains()
@@ -48,30 +48,30 @@ void AWorldAmbientEffectManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FString CurrentWeatherName = WeatherActor->GetCurrentWeatherName();
-	FString NextWeatherName = WeatherActor->GetNextWeatherName();
+	FString CurrentWeatherType = WeatherActor->GetCurrentWeatherType();
+	FString NextWeatherType = WeatherActor->GetNextWeatherType();
 	int CurrentTime = WeatherActor->GetCurrentTime();
-	for (FString WeatherName : WeatherNames)
+	for (FString WeatherType : WeatherTypes)
 	{
-		for (ABaseWorldAmbientEffect* WorldAmbientEffect : EffectsMap[WeatherName].Effects)
+		for (ABaseWorldAmbientEffect* WorldAmbientEffect : EffectsMap[WeatherType].Effects)
 		{
-			if (!WorldAmbientEffect->RequiredWeathers.Contains(CurrentWeatherName)
-				&& !WorldAmbientEffect->RequiredWeathers.Contains(NextWeatherName))
+			if (!WorldAmbientEffect->RequiredWeathers.Contains(CurrentWeatherType)
+				&& !WorldAmbientEffect->RequiredWeathers.Contains(NextWeatherType))
 			{
 				WorldAmbientEffect->Update(0, WorldAmbientEffect->DefaultFadeTime);
 			}
 		}
 	}
 
-	if (EffectsMap.Contains(CurrentWeatherName))
+	if (EffectsMap.Contains(CurrentWeatherType))
 	{
-		for (ABaseWorldAmbientEffect* WorldAmbientEffect : EffectsMap[CurrentWeatherName].Effects)
+		for (ABaseWorldAmbientEffect* WorldAmbientEffect : EffectsMap[CurrentWeatherType].Effects)
 		{
 			if (CurrentTime >= WorldAmbientEffect->StartTimeInt && CurrentTime <= WorldAmbientEffect->EndTimeInt)
 			{
 				if (WorldAmbientEffect->AffectedByWeatherLerp)
 				{
-					if (EffectsMap.Contains(NextWeatherName) && EffectsMap[NextWeatherName].Effects.Contains(WorldAmbientEffect))
+					if (EffectsMap.Contains(NextWeatherType) && EffectsMap[NextWeatherType].Effects.Contains(WorldAmbientEffect))
 					{
 						WorldAmbientEffect->Update(1, WorldAmbientEffect->DefaultFadeTime);
 					}
@@ -92,12 +92,12 @@ void AWorldAmbientEffectManager::Tick(float DeltaTime)
 		}
 	}
 
-	if (EffectsMap.Contains(NextWeatherName))
+	if (EffectsMap.Contains(NextWeatherType))
 	{
-		for (ABaseWorldAmbientEffect* WorldAmbientEffect : EffectsMap[NextWeatherName].Effects)
+		for (ABaseWorldAmbientEffect* WorldAmbientEffect : EffectsMap[NextWeatherType].Effects)
 		{
 			if (CurrentTime >= WorldAmbientEffect->StartTimeInt && CurrentTime <= WorldAmbientEffect->EndTimeInt &&
-				(!EffectsMap.Contains(CurrentWeatherName) || !EffectsMap[CurrentWeatherName].Effects.Contains(WorldAmbientEffect)))
+				(!EffectsMap.Contains(CurrentWeatherType) || !EffectsMap[CurrentWeatherType].Effects.Contains(WorldAmbientEffect)))
 			{
 				if (WorldAmbientEffect->AffectedByWeatherLerp)
 				{

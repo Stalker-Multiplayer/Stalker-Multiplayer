@@ -45,6 +45,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		void SetAllowedWeathers(const TArray<FString> &AllowedWeathers);
 
+	UFUNCTION(BlueprintCallable)
+		void OverrideWeatherNormal(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime);
+
+	UFUNCTION(BlueprintCallable)
+		void OverrideWeatherSpecial(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime);
+
 
 public:
 
@@ -52,7 +58,10 @@ public:
 		void SetPlayerController(ATestPlayerController* ThePlayerController) { PlayerController = ThePlayerController; }
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure)
-		void SetWeatherNames(const TArray<FString> &WeatherNames);
+		void SetNormalWeatherTypes(const TArray<FString> &WeatherTypes);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure)
+		void SetSpecialWeatherTypes(const TArray<FString> &WeatherTypes);
 
 
 };

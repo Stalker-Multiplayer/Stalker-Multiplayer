@@ -51,7 +51,7 @@ private:
 		TMap<FString, FAmbientEffectsArray> EffectsMap;
 
 	UPROPERTY()
-		TArray<FString> WeatherNames;
+		TArray<FString> WeatherTypes;
 
 
 

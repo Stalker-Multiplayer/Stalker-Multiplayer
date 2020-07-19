@@ -31,7 +31,8 @@ void ATestPlayerController::BeginPlay()
 		WeatherActor = *ActorItr;
 		if (IsLocalController())
 		{
-			TestMenuUI->SetWeatherNames(WeatherActor->GetAllWeatherNames());
+			TestMenuUI->SetNormalWeatherTypes(WeatherActor->GetNormalWeatherTypes());
+			TestMenuUI->SetSpecialWeatherTypes(WeatherActor->GetSpecialWeathersTypes());
 		}
 		break;
 	}
@@ -50,23 +51,26 @@ void ATestPlayerController::SetupInputComponent()
 
 void ATestPlayerController::ToggleTestMenu()
 {
-	if (TestMenuUI->GetVisibility() == ESlateVisibility::Visible) {
-		TestMenuUI->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	else
+	if (TestMenuUI)
 	{
-		TestMenuUI->SetVisibility(ESlateVisibility::Visible);
+		if (TestMenuUI->GetVisibility() == ESlateVisibility::Visible) {
+			TestMenuUI->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			TestMenuUI->SetVisibility(ESlateVisibility::Visible);
+		}
+		UpdateMouseControl();
 	}
-	UpdateMouseControl();
 }
 
 bool ATestPlayerController::IsAnyMenuVisible()
 {
-	if (!Super::IsAnyMenuVisible()) {
+	if (!Super::IsAnyMenuVisible() && TestMenuUI) {
 		return TestMenuUI->GetVisibility() == ESlateVisibility::Visible;
 	}
 
-	return true;
+	return Super::IsAnyMenuVisible();
 }
 
 void ATestPlayerController::HideAllUI(bool HideCustom)
@@ -142,6 +146,48 @@ void ATestPlayerController::Server_SetAllowedWeathers_Implementation(const TArra
 }
 
 bool ATestPlayerController::Server_SetAllowedWeathers_Validate(const TArray<FString> &AllowedWeathers)
+{
+	return true;
+}
+
+void ATestPlayerController::OverrideWeatherNormal(FString WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime)
+{
+	Server_OverrideWeatherNormal(WeatherType, StartTime, StartTimeFull, EndTimeFull, EndTime);
+}
+
+void ATestPlayerController::Server_OverrideWeatherNormal_Implementation(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime)
+{
+	if (WeatherActor)
+	{
+		TArray<FString> BetweenWeatherTypes;
+		TArray<FTimecode> BetweenStartTimes;
+		BetweenStartTimes.Add(StartTimeFull);
+		BetweenWeatherTypes.Add(WeatherType);
+		BetweenStartTimes.Add(EndTimeFull);
+		BetweenWeatherTypes.Add(WeatherType + "");
+		WeatherActor->OverrideWeatherNormal(BetweenWeatherTypes, StartTime, BetweenStartTimes, EndTime, true);
+	}
+}
+
+bool ATestPlayerController::Server_OverrideWeatherNormal_Validate(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime)
+{
+	return true;
+}
+
+void ATestPlayerController::OverrideWeatherSpecial(FString WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime)
+{
+	Server_OverrideWeatherSpecial(WeatherType, StartTime, StartTimeFull, EndTimeFull, EndTime);
+}
+
+void ATestPlayerController::Server_OverrideWeatherSpecial_Implementation(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime)
+{
+	if (WeatherActor)
+	{
+		WeatherActor->OverrideWeatherSpecial(WeatherType, StartTime, StartTimeFull, EndTimeFull, EndTime);
+	}
+}
+
+bool ATestPlayerController::Server_OverrideWeatherSpecial_Validate(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime)
 {
 	return true;
 }

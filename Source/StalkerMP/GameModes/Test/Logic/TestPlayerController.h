@@ -93,4 +93,17 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void Server_SetAllowedWeathers(const TArray<FString> &AllowedWeathers);
 
+	UFUNCTION()
+		void OverrideWeatherNormal(FString WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void Server_OverrideWeatherNormal(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime);
+
+	UFUNCTION()
+		void OverrideWeatherSpecial(FString WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void Server_OverrideWeatherSpecial(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime);
+
+
 };

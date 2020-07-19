@@ -30,3 +30,13 @@ void UTestMenuUI::SetAllowedWeathers(const TArray<FString> &AllowedWeathers)
 {
 	PlayerController->SetAllowedWeathers(AllowedWeathers);
 }
+
+void UTestMenuUI::OverrideWeatherNormal(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime)
+{
+	PlayerController->OverrideWeatherNormal(WeatherType, StartTime, StartTimeFull, EndTimeFull, EndTime);
+}
+
+void UTestMenuUI::OverrideWeatherSpecial(const FString &WeatherType, FTimecode StartTime, FTimecode StartTimeFull, FTimecode EndTimeFull, FTimecode EndTime)
+{
+	PlayerController->OverrideWeatherSpecial(WeatherType, StartTime, StartTimeFull, EndTimeFull, EndTime);
+}

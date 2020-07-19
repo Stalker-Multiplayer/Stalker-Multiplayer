@@ -31,7 +31,7 @@ public:
 		FTimecode StartTime = FTimecode(-1, -1, -1, -1, false);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		UTextureCube* SkyCubemap;
+		UTextureCube* SkyCubemap = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		float SunLightIntensity = 2.0;
@@ -80,12 +80,15 @@ public:
 		FString WeatherName;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		FString WeatherType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		int Possibility = 10;
 
 };
 
 USTRUCT(BlueprintType)
-struct FWeatherTypeData
+struct FNormalWeatherTypeData
 {
 	GENERATED_BODY()
 
@@ -96,6 +99,21 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		TArray<FNextPossibleWeather> NextPossibleWeathers;
+
+};
+
+USTRUCT(BlueprintType)
+struct FSpecialWeatherTypeData
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		TArray<FWeatherTimeOfDayData> Hours;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		TArray<FString> WeatherTypes;
 
 };
 
@@ -142,10 +160,10 @@ private:
 		float WeatherLerpValue = 0;
 
 	UPROPERTY()
-		FString CurrentWeatherName;
+		FString CurrentWeatherType;
 
 	UPROPERTY()
-		FString NextWeatherName;
+		FString NextWeatherType;
 
 	UPROPERTY()
 		FWeatherTimeOfDayData NextWeather;
@@ -153,11 +171,14 @@ private:
 	UPROPERTY()
 		TArray<FString> AllowedWeathers;
 
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentTime)
-		int CurrentTime;
+	UPROPERTY()
+		float CurrentTime;
+
+	UPROPERTY(ReplicatedUsing = OnRep_TimelinePosition)
+		float TimelinePosition = 0;
 
 	UPROPERTY()
-		bool CurrentTimeReplicated = false;
+		bool TimelinePositionReplicated = false;
 
 	UPROPERTY(ReplicatedUsing = OnRep_TimelineLength)
 		int TimelineLength = -1;
@@ -177,11 +198,11 @@ private:
 	UPROPERTY()
 		bool CurrentWeatherDatasReplicated = false;
 
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentWeatherNames)
-		TArray<FString> CurrentWeatherNames;
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentWeatherTypes)
+		TArray<FString> CurrentWeatherTypes;
 
 	UPROPERTY()
-		bool CurrentWeatherNamesReplicated = false;
+		bool CurrentWeatherTypesReplicated = false;
 
 	UPROPERTY()
 		APlayerCameraManager* AttachedCamera;
@@ -256,7 +277,10 @@ protected:
 		FName RainEmitterLocationParameterName = FName(TEXT("RainEmitterLocation"));
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		TMap<FString, FWeatherTypeData> WeatherTypes;
+		TMap<FString, FNormalWeatherTypeData> Weathers;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		TMap<FString, FSpecialWeatherTypeData> SpecialWeathers;
 
 
 
@@ -266,7 +290,7 @@ protected:
 private:
 
 	UFUNCTION()
-		void OnRep_CurrentTime();
+		void OnRep_TimelinePosition();
 
 	UFUNCTION()
 		void OnRep_TimelineLength();
@@ -278,7 +302,7 @@ private:
 		void OnRep_CurrentWeatherDatas();
 
 	UFUNCTION()
-		void OnRep_CurrentWeatherNames();
+		void OnRep_CurrentWeatherTypes();
 
 	UFUNCTION()
 		void OnEverythingReplicated();
@@ -287,7 +311,7 @@ private:
 		void ApplyCurrentWeatherTimeline(float Val);
 
 	UFUNCTION()
-		FString CalculateNextWeatherName(FRandomStream &RandomStream, const TArray<FString> &TheAllowedWeathers);
+		FString CalculateNextWeatherType(FRandomStream &RandomStream, const TArray<FString> &TheAllowedWeathers);
 
 	UFUNCTION()
 		FWeatherTimeOfDayData FindWeatherData(FTimecode Time, FString WeatherType);
@@ -295,26 +319,56 @@ private:
 	UFUNCTION()
 		FWeatherTimeOfDayData FindNextWeatherData(FTimecode Time, FString WeatherType);
 
+	UFUNCTION()
+		FWeatherTimeOfDayData LerpWeather(FWeatherTimeOfDayData& WeatherBefore, FWeatherTimeOfDayData& WeatherAfter, FTimecode Time);
+
+	UFUNCTION()
+		FWeatherTimeOfDayData LerpWeatherF(FWeatherTimeOfDayData& WeatherBefore, FWeatherTimeOfDayData& WeatherAfter, float Time);
+
+	UFUNCTION()
+		void ValidateAndFixTimecode(FTimecode& Timecode);
+
+	UFUNCTION()
+		void ValidateAndFixCurrentWeatherDatas();
+
+	UFUNCTION()
+		float CalculateWeatherLerp(FTimecode StartTime, FTimecode EndTime, FTimecode Time);
+
+	UFUNCTION()
+		float CalculateWeatherLerpF(FTimecode StartTime, FTimecode EndTime, float Time);
+
 	UFUNCTION(NetMulticast, Reliable)
 		void Multicast_GenerateWeather(int StartTime, int Seed, FTimecode FinalTime, int SecondsForChange, bool ForceNextDay, const TArray<FString> &TheAllowedWeathers);
+
+	UFUNCTION(NetMulticast, Reliable)
+		void Multicast_OverrideWeatherNormal(const TArray<FString> &BetweenWeatherTypesConst, FTimecode StartTime, const TArray<FTimecode> &BetweenTimesConst, FTimecode EndTime, bool KeepSunMovement);
+
+	UFUNCTION(NetMulticast, Reliable)
+		void Multicast_OverrideWeatherSpecial(const FString &WeatherType, FTimecode StartTime, FTimecode StartFullTime, FTimecode EndFullTime, FTimecode EndTime);
+
+	UFUNCTION()
+		void DoOverrideWeather(TArray<FWeatherTimeOfDayData> &WeathersToInsert, TArray<FString> &WeatherTypesToInsert, FTimecode StartTime, FTimecode EndTime, bool KeepSunMovement);
 
 
 protected:
 
 	UFUNCTION(BlueprintCallable)
-		void Update(FTimecode Time, FWeatherTimeOfDayData WeatherData, FWeatherTimeOfDayData NextWeatherData);
+		void Update(float Time, FWeatherTimeOfDayData WeatherData, FWeatherTimeOfDayData NextWeatherData);
 
 
 public:
 
 	UFUNCTION()
-		FString GetCurrentWeatherName() { return CurrentWeatherName; }
+		FString GetCurrentWeatherType() { return CurrentWeatherType; }
 
 	UFUNCTION()
-		FString GetNextWeatherName() { return NextWeatherName; }
+		FString GetNextWeatherType() { return NextWeatherType; }
 
 	UFUNCTION()
 		float GetWeatherLerpValue() { return WeatherLerpValue; }
+
+	UFUNCTION()
+		int GetCurrentTime() { return CurrentTime; }
 
 	UFUNCTION()
 		float GetFogMaxOpacity();
@@ -323,19 +377,25 @@ public:
 		void SetFogMaxOpacity(float Opacity);
 
 	UFUNCTION()
-		TArray<FString> GetAllWeatherNames();
+		TArray<FString> GetNormalWeatherTypes();
+
+	UFUNCTION()
+		TArray<FString> GetSpecialWeathersTypes();
 
 	UFUNCTION()
 		void SetAllowedWeathers(const TArray<FString> &TheAllowedWeathers) { AllowedWeathers = TheAllowedWeathers; };
 
 	UFUNCTION()
-		void SetTimeOfDay(FTimecode FinalTime, int SecondsForChange, bool ForceNextDay);
-
-	UFUNCTION()
 		void AddTime(FTimecode Time, int SecondsForChange);
 
 	UFUNCTION()
-		int GetCurrentTime() { return CurrentTime; }
+		void SetTimeOfDay(FTimecode FinalTime, int SecondsForChange, bool ForceNextDay);
+
+	UFUNCTION()
+		void OverrideWeatherNormal(const TArray<FString> &BetweenWeatherTypes, FTimecode StartTime, const TArray<FTimecode> &BetweenTimes, FTimecode EndTime, bool KeepSunMovement);
+
+	UFUNCTION()
+		void OverrideWeatherSpecial(FString WeatherType, FTimecode StartTime, FTimecode StartFullTime, FTimecode EndFullTime, FTimecode EndTime);
 
 	UFUNCTION(NetMulticast, Reliable)
 		void Multicast_PauseChangingWeather();
