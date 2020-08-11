@@ -10,6 +10,7 @@
 #include "BRGameMode.generated.h"
 
 class ABRZoneActor;
+class ABRBlowoutActor;
 class AController;
 class APlayerStart;
 class APlayerStartPIE;
@@ -73,6 +74,7 @@ public:
 	static const FString EARLIEST_START_TIME_SETTING_KEY;
 	static const FString LATEST_START_TIME_SETTING_KEY;
 	static const FString GAME_TIME_PASS_SETTING_KEY;
+	static const FString USE_ZONE_CIRCLE;
 
 
 
@@ -101,7 +103,13 @@ private:
 		TArray<AItemSpawner*> ItemSpawners;
 
 	UPROPERTY()
+		bool UseZoneCircle = false;
+
+	UPROPERTY()
 		ABRZoneActor* ZoneActor;
+
+	UPROPERTY()
+		ABRBlowoutActor* BlowoutActor;
 
 	UPROPERTY()
 		FTimerHandle StartCountdownTimerHandle;
@@ -111,6 +119,9 @@ private:
 
 	UPROPERTY()
 		TArray<APlayerCharacter*> AliveCharacters;
+
+	UPROPERTY()
+		FTimecode MatchStartTime;
 
 
 protected:

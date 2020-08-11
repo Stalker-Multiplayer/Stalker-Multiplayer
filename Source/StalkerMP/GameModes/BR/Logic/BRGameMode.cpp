@@ -3,7 +3,9 @@
 #include "BRGameMode.h"
 
 #include "StalkerMP/GameModes/BR/Actors/BRZoneActor.h"
+#include "StalkerMP/GameModes/BR/Actors/BRBlowoutActor.h"
 #include "StalkerMP/GameModes/BR/Actors/BRLevelDataActor.h"
+#include "StalkerMP/GameModes/BR/Actors/BRSafeZoneActor.h"
 #include "StalkerMP/GameModes/BR/Logic/BRPlayerController.h"
 #include "StalkerMP/GameModes/BR/Logic/BRGameState.h"
 #include "StalkerMP/GameModes/BR/Logic/BRPlayerState.h"
@@ -30,7 +32,8 @@ const FString ABRGameMode::GAME_START_DELAY_SETTING_KEY = "BR_GameStartDelay";
 const FString ABRGameMode::POST_FINISH_RESET_DELAY_SETTING_KEY = "BR_PostFinishResetDelay";
 const FString ABRGameMode::EARLIEST_START_TIME_SETTING_KEY = "BR_EarliestPossibleTimeOfDayForMatchStart";
 const FString ABRGameMode::LATEST_START_TIME_SETTING_KEY = "BR_LatestPossibleTimeOfDayForMatchStart";
-const FString ABRGameMode::GAME_TIME_PASS_SETTING_KEY = "BR_TimeOfDayPassUntilZeroSize";
+const FString ABRGameMode::GAME_TIME_PASS_SETTING_KEY = "BR_TimeOfDayPassDuringMatch";
+const FString ABRGameMode::USE_ZONE_CIRCLE = "BR_UseZoneCircle";
 
 
 void ABRGameMode::OnGamemodeLevelLoaded()
@@ -41,10 +44,20 @@ void ABRGameMode::OnGamemodeLevelLoaded()
 	StartGameDelay = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, GAME_START_DELAY_SETTING_KEY, StartGameDelay);
 	RestartGameDelay = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, POST_FINISH_RESET_DELAY_SETTING_KEY, RestartGameDelay);
 
+	if (StartGameDelay < 2)
+	{
+		StartGameDelay = 2;
+	}
+	if (RestartGameDelay < 1)
+	{
+		RestartGameDelay = 1;
+	}
+
 	EarliestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, EARLIEST_START_TIME_SETTING_KEY, "07:00:00"));
 	LatestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, LATEST_START_TIME_SETTING_KEY, "16:00:00"));
 	GameTimePass = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, GAME_TIME_PASS_SETTING_KEY, "3:00:00"));
-	GameTimePass = FTimecode(GameTimePass.Hours * 2, GameTimePass.Minutes * 2, GameTimePass.Seconds * 2, 0, false);
+
+	UseZoneCircle = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, USE_ZONE_CIRCLE, UseZoneCircle) > 0;
 
 	GetGameState<ABRGameState>()->MinPlayersToStart = MinPlayersToStart;
 
@@ -53,8 +66,20 @@ void ABRGameMode::OnGamemodeLevelLoaded()
 		ABRLevelDataActor* LevelDataActor = *ActorItr;
 
 		ZoneActor = LevelDataActor->ZoneActor;
+		BlowoutActor = LevelDataActor->BlowoutActor;
 
 		break;
+	}
+
+	if (UseZoneCircle)
+	{
+		ZoneActor->SetEnabled(true);
+		BlowoutActor->SetEnabled(false);
+	}
+	else
+	{
+		ZoneActor->SetEnabled(false);
+		BlowoutActor->SetEnabled(true);
 	}
 
 	for (TActorIterator<AItemSpawner> ActorItr(GetWorld()); ActorItr; ++ActorItr)
@@ -182,9 +207,10 @@ void ABRGameMode::LaunchGameStartTimer()
 	int EarliestStartTimeInt = USMPFunctions::TimecodeToSeconds(EarliestStartTime);
 	int LatestStartTimeInt = USMPFunctions::TimecodeToSeconds(LatestStartTime);
 
+	int WeatherWarpTime = StartGameDelay - 1;
 	int NextStartTime = EarliestStartTimeInt + UKismetMathLibrary::RandomInteger(LatestStartTimeInt - EarliestStartTimeInt);
-	FTimecode Time = USMPFunctions::SecondsToTimecode(NextStartTime);
-	WeatherActor->SetTimeOfDay(Time, StartGameDelay, (NextStartTime - WeatherActor->GetCurrentTime()) < NEXT_START_TIME_MIN_DELTA);
+	MatchStartTime = USMPFunctions::SecondsToTimecode(NextStartTime);
+	WeatherActor->SetTimeOfDay(MatchStartTime, WeatherWarpTime, (NextStartTime - WeatherActor->GetCurrentTime()) < NEXT_START_TIME_MIN_DELTA);
 
 	GetGameState<ABRGameState>()->SetMatchState(EMatchState::Starting);
 }
@@ -192,8 +218,6 @@ void ABRGameMode::LaunchGameStartTimer()
 void ABRGameMode::StartGame()
 {
 	Super::StartGame();
-
-	ZoneActor->Start();
 
 	TArray<ABRPlayerController*> PlayersToSpawn;
 	TArray<AActor*> AllJoinedPlayers;
@@ -204,7 +228,7 @@ void ABRGameMode::StartGame()
 		PlayersToSpawn.Add(BRPlayerController);
 	}
 
-	// Destroying dead bodies
+	// Destroying spectators
 	for (TActorIterator<ASpectator> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
 		ActorItr->Destroy();
@@ -262,12 +286,28 @@ void ABRGameMode::StartGame()
 		ItemSpawner->SpawnItems();
 	}
 
-	WeatherActor->AddTime(GameTimePass, ZoneActor->GetTimeToFullyShrink() * 2);
+	if (UseZoneCircle)
+	{
+		WeatherActor->AddTime(GameTimePass, ZoneActor->GetTimeToFullyShrink());
+		ZoneActor->Start();
+	}
+	else
+	{
+		WeatherActor->AddTime(GameTimePass, BlowoutActor->GetTimeTillTheEnd());
+		BlowoutActor->Start(MatchStartTime, GameTimePass);
+	}
 }
 
 void ABRGameMode::StopGame()
 {
-	ZoneActor->Stop();
+	if (UseZoneCircle)
+	{
+		ZoneActor->Stop();
+	}
+	else
+	{
+		BlowoutActor->Stop();
+	}
 
 	Super::StopGame();
 }
@@ -277,7 +317,14 @@ void ABRGameMode::RestartGame()
 	Super::RestartGame();
 
 	AliveCharacters.Empty();
-	ZoneActor->Reset();
+	if (UseZoneCircle)
+	{
+		ZoneActor->Reset();
+	}
+	else
+	{
+		BlowoutActor->Reset();
+	}
 	GameStartTimer = StartGameDelay;
 	GetGameState<ABRGameState>()->GameStartTimer = GameStartTimer;
 
@@ -298,6 +345,12 @@ void ABRGameMode::RestartGame()
 
 	// Destroying dead bodies
 	for (TActorIterator<ADeadBodyBackpack> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+	{
+		ActorItr->Destroy();
+	}
+
+	// Destroying safe zones
+	for (TActorIterator<ABRSafeZoneActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
 		ActorItr->Destroy();
 	}

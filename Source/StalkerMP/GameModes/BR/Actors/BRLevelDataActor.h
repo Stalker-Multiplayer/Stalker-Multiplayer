@@ -7,6 +7,7 @@
 #include "BRLevelDataActor.generated.h"
 
 class ABRZoneActor;
+class ABRBlowoutActor;
 class UMaterialParameterCollection;
 
 /**
@@ -25,6 +26,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BR")
 		ABRZoneActor* ZoneActor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BR")
+		ABRBlowoutActor* BlowoutActor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
 		UMaterialParameterCollection* MapMaterialParameterCollection;

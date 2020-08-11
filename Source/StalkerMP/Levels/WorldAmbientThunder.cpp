@@ -14,6 +14,7 @@
 AWorldAmbientThunder::AWorldAmbientThunder()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 	SetReplicates(true);
 	NetCullDistanceSquared = 40000000000.0;
 

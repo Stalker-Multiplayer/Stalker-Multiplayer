@@ -63,7 +63,7 @@ protected:
 		UDirectionalLightComponent* LightComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		TArray<USoundBase*> ThunderSounds;
+		TArray<USoundBase*> ThunderSounds; // This has to be an array and not a SoundCue so that all clients would hear the same thunder sound
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		FRotator MinThunderRotation = FRotator(200, 20, 0);

@@ -66,6 +66,15 @@ void ADMGameMode::OnGamemodeLevelLoaded()
 	RespawnDelay = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, RESPAWN_DELAY, RespawnDelay);
 	DroppedItemsRemoveDelay = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server, DROPPED_ITEMS_REMOVE_DELAY, DroppedItemsRemoveDelay);
 
+	if (StartGameDelay < 2)
+	{
+		StartGameDelay = 2;
+	}
+	if (RestartGameDelay < 1)
+	{
+		RestartGameDelay = 1;
+	}
+
 	EarliestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, EARLIEST_START_TIME_SETTING_KEY, "07:00:00"));
 	LatestStartTime = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, LATEST_START_TIME_SETTING_KEY, "16:00:00"));
 	GameTimePass = USMPFunctions::ParseTimeString(GetGameInstance<UStalkerMPGameInstance>()->GetStringSettingValue(ESettingsType::Server, GAME_TIME_PASS_SETTING_KEY, "3:00:00"));

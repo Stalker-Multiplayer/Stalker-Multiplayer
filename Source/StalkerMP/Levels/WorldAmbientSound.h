@@ -25,7 +25,7 @@ class STALKERMP_API AWorldAmbientSound : public ABaseWorldAmbientEffect
 public:
 	AWorldAmbientSound();
 	virtual void BeginPlay() override;
-	virtual void Update(float NewWeatherLerp, float FadeTime);
+	virtual void Update(float NewVolume, float FadeTime);
 
 
 

@@ -8,6 +8,7 @@
 ABaseWorldAmbientEffect::ABaseWorldAmbientEffect()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 	SetReplicates(false);
 	SetCanBeDamaged(false);
 }

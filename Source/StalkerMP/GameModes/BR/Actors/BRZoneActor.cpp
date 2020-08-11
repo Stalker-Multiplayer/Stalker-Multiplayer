@@ -3,6 +3,7 @@
 #include "BRZoneActor.h"
 
 #include "StalkerMP/Pawns/PlayerCharacter/PlayerCharacter.h"
+#include "StalkerMP/GameModes/BR/Actors/BRLevelDataActor.h"
 #include "StalkerMP/DamageTypes/ZoneDamageType.h"
 #include "StalkerMP/StalkerMPGameInstance.h"
 
@@ -21,11 +22,11 @@ const FString ABRZoneActor::ZONE_STAGE_WAIT_TIME_SETTING_KEY = "BR_{Map}_ZoneSta
 const FString ABRZoneActor::ZONE_STAGE_SHRINK_TIME_SETTING_KEY = "BR_{Map}_ZoneStage{StageNum}_ShrinkTime";
 const FString ABRZoneActor::ZONE_STAGE_DAMAGE_SETTING_KEY = "BR_{Map}_ZoneStage{StageNum}_Damage";
 
-// Sets default values
 ABRZoneActor::ABRZoneActor()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bAllowTickOnDedicatedServer = false;
 	SetReplicates(true);
 	NetCullDistanceSquared = 40000000000.0;
 
@@ -54,6 +55,7 @@ void ABRZoneActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ABRZoneActor, IsEnabled);
 	DOREPLIFETIME(ABRZoneActor, ZoneTimeLineLength);
 	DOREPLIFETIME(ABRZoneActor, ZoneSizeRichCurve);
 	DOREPLIFETIME(ABRZoneActor, ZoneLocationRichCurveX);
@@ -64,6 +66,18 @@ void ABRZoneActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 void ABRZoneActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABRLevelDataActor::StaticClass(), FoundActors);
+
+	if (FoundActors.Num() > 0)
+	{
+		ABRLevelDataActor* LevelDataActor = (ABRLevelDataActor*)FoundActors[0];
+
+		CmPerPixel = LevelDataActor->MapCmPerPixel;
+		TextureSize = LevelDataActor->MapTextureSize;
+		TextureOffset = LevelDataActor->MapTextureOffset;
+	}
 
 	ZoneTimeline = NewObject<UTimelineComponent>(this, FName("ZoneTimeline"));
 	ZoneTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
@@ -165,6 +179,24 @@ void ABRZoneActor::OnRep_ZoneLocationRichCurveZ()
 	}
 }
 
+void ABRZoneActor::SetEnabled(bool Enabled)
+{
+	IsEnabled = Enabled;
+}
+
+void ABRZoneActor::OnRep_IsEnabled()
+{
+	if (IsEnabled)
+	{
+		SetActorTickEnabled(true);
+	}
+	else
+	{
+		SetHidden(true);
+		MarkComponentsRenderStateDirty();
+	}
+}
+
 void ABRZoneActor::Reset()
 {
 	Stop();
@@ -177,68 +209,62 @@ void ABRZoneActor::Reset()
 
 void ABRZoneActor::Start()
 {
-	if (HasAuthority())
+	ZoneTimeLineLength = 0;
+	ZoneSizeRichCurve = FRichCurve();
+	ZoneLocationRichCurveX = FRichCurve();
+	ZoneLocationRichCurveY = FRichCurve();
+	ZoneLocationRichCurveZ = FRichCurve();
+
+	float ZoneStageSize = InitialZoneSize;
+	FKeyHandle Key = ZoneSizeRichCurve.AddKey(0, ZoneStageSize);
+	ZoneSizeRichCurve.SetKeyInterpMode(Key, RCIM_Linear);
+
+	FVector ZoneStageLocation = InitialZoneLocation;
+	Key = ZoneLocationRichCurveX.AddKey(0, ZoneStageLocation.X);
+	ZoneLocationRichCurveX.SetKeyInterpMode(Key, RCIM_Linear);
+	Key = ZoneLocationRichCurveY.AddKey(0, ZoneStageLocation.Y);
+	ZoneLocationRichCurveY.SetKeyInterpMode(Key, RCIM_Linear);
+	Key = ZoneLocationRichCurveZ.AddKey(0, ZoneStageLocation.Z);
+	ZoneLocationRichCurveZ.SetKeyInterpMode(Key, RCIM_Linear);
+
+	for (int i = 0; i < SIZE_WAIT_SHRINK_DAMAGE.Num(); i++)
 	{
-		ZoneTimeLineLength = 0;
-		ZoneSizeRichCurve = FRichCurve();
-		ZoneLocationRichCurveX = FRichCurve();
-		ZoneLocationRichCurveY = FRichCurve();
-		ZoneLocationRichCurveZ = FRichCurve();
+		ZoneTimeLineLength += SIZE_WAIT_SHRINK_DAMAGE[i].Y;
+		ZoneSizeRichCurve.AddKey(ZoneTimeLineLength, ZoneStageSize);
+		ZoneLocationRichCurveX.AddKey(ZoneTimeLineLength, ZoneStageLocation.X);
+		ZoneLocationRichCurveY.AddKey(ZoneTimeLineLength, ZoneStageLocation.Y);
+		ZoneLocationRichCurveZ.AddKey(ZoneTimeLineLength, ZoneStageLocation.Z);
 
-		float ZoneStageSize = InitialZoneSize;
-		FKeyHandle Key = ZoneSizeRichCurve.AddKey(0, ZoneStageSize);
-		ZoneSizeRichCurve.SetKeyInterpMode(Key, RCIM_Linear);
+		ZoneStageLocation = GetNextZoneStageLocation(ZoneStageLocation, ZoneStageSize - SIZE_WAIT_SHRINK_DAMAGE[i].X);
 
-		FVector ZoneStageLocation = InitialZoneLocation;
-		Key = ZoneLocationRichCurveX.AddKey(0, ZoneStageLocation.X);
-		ZoneLocationRichCurveX.SetKeyInterpMode(Key, RCIM_Linear);
-		Key = ZoneLocationRichCurveY.AddKey(0, ZoneStageLocation.Y);
-		ZoneLocationRichCurveY.SetKeyInterpMode(Key, RCIM_Linear);
-		Key = ZoneLocationRichCurveZ.AddKey(0, ZoneStageLocation.Z);
-		ZoneLocationRichCurveZ.SetKeyInterpMode(Key, RCIM_Linear);
-
-		for (int i = 0; i < SIZE_WAIT_SHRINK_DAMAGE.Num(); i++)
-		{
-			ZoneTimeLineLength += SIZE_WAIT_SHRINK_DAMAGE[i].Y;
-			ZoneSizeRichCurve.AddKey(ZoneTimeLineLength, ZoneStageSize);
-			ZoneLocationRichCurveX.AddKey(ZoneTimeLineLength, ZoneStageLocation.X);
-			ZoneLocationRichCurveY.AddKey(ZoneTimeLineLength, ZoneStageLocation.Y);
-			ZoneLocationRichCurveZ.AddKey(ZoneTimeLineLength, ZoneStageLocation.Z);
-
-			ZoneStageLocation = GetNextZoneStageLocation(ZoneStageLocation, ZoneStageSize - SIZE_WAIT_SHRINK_DAMAGE[i].X);
-
-			ZoneTimeLineLength += SIZE_WAIT_SHRINK_DAMAGE[i].Z;
-			ZoneStageSize = SIZE_WAIT_SHRINK_DAMAGE[i].X;
-			ZoneSizeRichCurve.AddKey(ZoneTimeLineLength, ZoneStageSize);
-			ZoneLocationRichCurveX.AddKey(ZoneTimeLineLength, ZoneStageLocation.X);
-			ZoneLocationRichCurveY.AddKey(ZoneTimeLineLength, ZoneStageLocation.Y);
-			ZoneLocationRichCurveZ.AddKey(ZoneTimeLineLength, ZoneStageLocation.Z);
-		}
-
-		OnRep_ZoneTimeLineLength();
-		OnRep_ZoneSizeRichCurve();
-		OnRep_ZoneLocationRichCurveX();
-		OnRep_ZoneLocationRichCurveY();
-		OnRep_ZoneLocationRichCurveZ();
-
-		GetWorld()->GetTimerManager().SetTimer(DamageTimerHandle, this, &ABRZoneActor::DamagePlayerOutsideZone, 1.0, true);
-		ZoneTimeline->Play();
-		StartNextZoneStage();
+		ZoneTimeLineLength += SIZE_WAIT_SHRINK_DAMAGE[i].Z;
+		ZoneStageSize = SIZE_WAIT_SHRINK_DAMAGE[i].X;
+		ZoneSizeRichCurve.AddKey(ZoneTimeLineLength, ZoneStageSize);
+		ZoneLocationRichCurveX.AddKey(ZoneTimeLineLength, ZoneStageLocation.X);
+		ZoneLocationRichCurveY.AddKey(ZoneTimeLineLength, ZoneStageLocation.Y);
+		ZoneLocationRichCurveZ.AddKey(ZoneTimeLineLength, ZoneStageLocation.Z);
 	}
+
+	OnRep_ZoneTimeLineLength();
+	OnRep_ZoneSizeRichCurve();
+	OnRep_ZoneLocationRichCurveX();
+	OnRep_ZoneLocationRichCurveY();
+	OnRep_ZoneLocationRichCurveZ();
+
+	GetWorld()->GetTimerManager().SetTimer(DamageTimerHandle, this, &ABRZoneActor::DamagePlayerOutsideZone, 1.0, true);
+	ZoneTimeline->Play();
+	StartNextZoneStage();
 }
 
 void ABRZoneActor::Stop()
 {
-	if (HasAuthority())
+	if (GetWorld())
 	{
-		if (GetWorld())
-		{
-			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-		}
-		if (ZoneTimeline)
-		{
-			ZoneTimeline->Stop();
-		}
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
+	if (ZoneTimeline)
+	{
+		ZoneTimeline->Stop();
 	}
 }
 
@@ -299,4 +325,11 @@ void ABRZoneActor::DamagePlayerOutsideZone()
 			PlayerCharacter->TakeDamage(CurrentZoneDamage, FDamageEvent(UZoneDamageType::StaticClass()), nullptr, nullptr);
 		}
 	}
+}
+
+FVector ABRZoneActor::GetSafeZoneCoords()
+{
+	return FVector(GetActorLocation().X / TextureSize.X / CmPerPixel + 0.5,
+		GetActorLocation().Y / TextureSize.Y / CmPerPixel + 0.5,
+		GetActorScale3D().X * 100 / TextureSize.X / CmPerPixel);
 }

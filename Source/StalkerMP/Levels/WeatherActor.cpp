@@ -278,8 +278,8 @@ void AWeatherActor::ApplyCurrentWeatherTimeline(float Val)
 		NextWeather = CurrentWeatherDatas[1];
 		NextWeatherType = CurrentWeatherTypes[1];
 
-		if (!HasAuthority())
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, CurrentWeather.StartTime.ToString() + " - " + CurrentWeatherType);
+		/*if (!HasAuthority())
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, CurrentWeather.StartTime.ToString() + " - " + CurrentWeatherType);*/
 
 		CurrentTime = Val;
 
@@ -302,12 +302,12 @@ void AWeatherActor::Update(float Time, FWeatherTimeOfDayData WeatherData, FWeath
 	FWeatherTimeOfDayData LerpedWeather = LerpWeatherF(WeatherData, NextWeatherData, Time);
 	WeatherLerpValue = CalculateWeatherLerpF(WeatherData.StartTime, NextWeatherData.StartTime, Time);
 
-	if (!HasAuthority())
+	/*if (!HasAuthority())
 		if (WeatherLerpValue < 0 || WeatherLerpValue > 1)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::SanitizeFloat(Time) + " - " + WeatherData.StartTime.ToString() + " - " + NextWeatherData.StartTime.ToString());
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::SanitizeFloat(WeatherLerpValue));
-		}
+		}*/
 
 	FRotator SunRotation = FRotator(LerpedWeather.SunLongitude, 0, 0);
 	FRotator SunAltitudeRotation = FRotator(0, LerpedWeather.SunAltitude, 0);
@@ -724,6 +724,10 @@ void AWeatherActor::DoOverrideWeather(TArray<FWeatherTimeOfDayData> &WeathersToI
 		{
 			StartWeatherType = CurrentWeatherTypes[CurrentWeatherTypes.Num() - 1] + "";
 		}
+		if (!AllowedWeathers.Contains(StartWeatherType))
+		{
+			StartWeatherType = AllowedWeathers[UKismetMathLibrary::RandomInteger(AllowedWeathers.Num())];
+		}
 		StartWeather = FindWeatherData(StartTime, StartWeatherType);
 		StartWeather.StartTime = StartTime;
 	}
@@ -755,6 +759,10 @@ void AWeatherActor::DoOverrideWeather(TArray<FWeatherTimeOfDayData> &WeathersToI
 		else
 		{
 			EndWeatherType = CurrentWeatherTypes[CurrentWeatherTypes.Num() - 1];
+		}
+		if (!AllowedWeathers.Contains(EndWeatherType))
+		{
+			EndWeatherType = AllowedWeathers[UKismetMathLibrary::RandomInteger(AllowedWeathers.Num())];
 		}
 		EndWeather = FindWeatherData(EndTime, EndWeatherType);
 		EndWeather.StartTime = EndTime;
@@ -1044,12 +1052,12 @@ void AWeatherActor::ValidateAndFixCurrentWeatherDatas()
 		ValidateAndFixTimecode(Weather.StartTime);
 	}
 
-	if (!HasAuthority())
+	/*if (!HasAuthority())
 	{
 		for (int i = 0; i < CurrentWeatherDatas.Num(); i++)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, CurrentWeatherDatas[i].StartTime.ToString() + " - " + CurrentWeatherTypes[i]);
 		}
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, "-----");
-	}
+	}*/
 }

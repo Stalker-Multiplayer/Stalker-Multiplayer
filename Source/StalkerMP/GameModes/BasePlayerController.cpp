@@ -621,8 +621,8 @@ bool ABasePlayerController::IsAnyMenuVisible()
 
 bool ABasePlayerController::IsGameMenuVisible()
 {
-	return GameMenuUI->GetVisibility() == ESlateVisibility::Visible
-		|| SettingsUI->GetVisibility() == ESlateVisibility::Visible;
+	return (GameMenuUI && GameMenuUI->GetVisibility() == ESlateVisibility::Visible)
+		|| (SettingsUI && SettingsUI->GetVisibility() == ESlateVisibility::Visible);
 }
 
 void ABasePlayerController::HideAllUI(bool HideCustom)

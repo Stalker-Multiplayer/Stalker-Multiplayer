@@ -36,21 +36,14 @@ ATerrainPhysMaterialData::ATerrainPhysMaterialData()
 
 	if (!HasAuthority() && !TerrainMaskRenderTarget)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "1");
 		TerrainMaskRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), TerrainMask->GetSizeX(), TerrainMask->GetSizeY());
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "2");
 		UCanvas* Canvas;
 		FVector2D Size;
 		FDrawToRenderTargetContext Context;
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "3");
 		UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(GetWorld(), TerrainMaskRenderTarget, Canvas, Size, Context);
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "4 - " + Size.ToString());
 		Canvas->K2_DrawTexture(TerrainMask, FVector2D(), Size, FVector2D(), FVector2D::UnitVector, FLinearColor::White, EBlendMode::BLEND_Opaque);
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "5");
 		UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(GetWorld(), Context);
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "6");
 		//UKismetRenderingLibrary::ReadRenderTargetUV(GetWorld(), TerrainMaskRenderTarget, 0, 0);
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "7");
 	}
 
 	SetActorTickEnabled(false);

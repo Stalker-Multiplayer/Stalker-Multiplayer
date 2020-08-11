@@ -8,6 +8,7 @@
 AWorldAmbientSound::AWorldAmbientSound()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 	SetHidden(true);
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
@@ -25,16 +26,28 @@ void AWorldAmbientSound::BeginPlay()
 	AudioComponent->AdjustVolume(0.01, 0, EAudioFaderCurve::Logarithmic);
 }
 
-void AWorldAmbientSound::Update(float NewWeatherLerp, float FadeTime)
+void AWorldAmbientSound::Update(float NewVolume, float FadeTime)
 {
-	if (NewWeatherLerp > 0 && !AudioComponent->IsActive())
+	if (DontFadeOut)
 	{
-		AudioComponent->SetActive(true);
-		AudioComponent->AdjustVolume(0, 0.01, EAudioFaderCurve::Logarithmic);
+		if (NewVolume > 0 && !AudioComponent->IsPlaying())
+		{
+			AudioComponent->SetActive(true);
+			Volume = 1;
+			AudioComponent->Play();
+		}
 	}
-	if (NewWeatherLerp != Volume)
+	else
 	{
-		Volume = NewWeatherLerp;
-		AudioComponent->AdjustVolume(FadeTime, Volume, EAudioFaderCurve::Logarithmic);
+		if (NewVolume > 0 && !AudioComponent->IsActive())
+		{
+			AudioComponent->SetActive(true);
+			AudioComponent->AdjustVolume(0, 0.01, EAudioFaderCurve::Logarithmic);
+		}
+		if (NewVolume != Volume)
+		{
+			Volume = NewVolume;
+			AudioComponent->AdjustVolume(FadeTime, Volume, EAudioFaderCurve::Logarithmic);
+		}
 	}
 }

@@ -54,6 +54,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool AffectedByWeatherLerp = true;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool DontFadeOut = false;
+
 
 
 

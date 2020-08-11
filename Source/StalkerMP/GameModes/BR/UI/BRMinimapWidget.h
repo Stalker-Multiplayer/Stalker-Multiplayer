@@ -8,10 +8,6 @@
 
 #include "BRMinimapWidget.generated.h"
 
-class ABRZoneActor;
-class UImage;
-class UMaterialParameterCollection;
-
 /**
  * 
  */
@@ -19,29 +15,5 @@ UCLASS()
 class STALKERMP_API UBRMinimapWidget : public UMinimapWidget
 {
 	GENERATED_BODY()
-
-
-
-
-// ------------------------------------------------------------------------- Function Override --------------------------------------------------------------------------
-
-public:
-
-	virtual void NativeConstruct();
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime);
-
-
-
-
-// ------------------------------------------------------------------------- Properties --------------------------------------------------------------------------
-
-private:
-
-	UPROPERTY()
-		ABRZoneActor* ZoneActor;
-
-	UPROPERTY()
-		UMaterialParameterCollection* MapMaterialParameterCollection;
-
 
 };

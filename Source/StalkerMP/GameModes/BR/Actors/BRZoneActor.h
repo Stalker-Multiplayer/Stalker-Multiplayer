@@ -20,7 +20,7 @@ class STALKERMP_API ABRZoneActor : public AActor
 
 // ------------------------------------------------------------------------- Constants --------------------------------------------------------------------------
 
-public:
+private:
 
 	static const FString ZONE_STAGE_AMOUNT_SETTING_KEY;
 	static const FString ZONE_STAGE_FINAL_SIZE_SETTING_KEY;
@@ -33,7 +33,6 @@ public:
 // ------------------------------------------------------------------------- Function Overrides --------------------------------------------------------------------------
 
 public:	
-	// Sets default values for this actor's properties
 	ABRZoneActor();
 
 	virtual void BeginPlay() override;
@@ -79,6 +78,9 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_ZoneLocationRichCurveZ)
 		FRichCurve ZoneLocationRichCurveZ;
 
+	UPROPERTY(ReplicatedUsing = OnRep_IsEnabled)
+		int IsEnabled = -1;
+
 	UPROPERTY()
 		int CurrentZoneStage = -1;
 
@@ -93,6 +95,15 @@ private:
 
 	UPROPERTY()
 		float InitialZoneSize = 0;
+	
+	UPROPERTY()
+		float CmPerPixel = 100;
+
+	UPROPERTY()
+		FVector2D TextureSize = FVector2D(128, 128);
+
+	UPROPERTY()
+		FVector2D TextureOffset = FVector2D(0, 0);
 
 
 protected:
@@ -136,6 +147,9 @@ private:
 	UFUNCTION()
 		void OnRep_ZoneLocationRichCurveZ();
 
+	UFUNCTION()
+		void OnRep_IsEnabled();
+
 
 protected:
 
@@ -148,8 +162,14 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 		FVector GetNextZoneStageLocation(FVector CurrentLocation, float ZoneStageSizeDiff);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		FVector GetSafeZoneCoords();
+
 
 public:
+
+	UFUNCTION()
+		void SetEnabled(bool Enabled);
 
 	UFUNCTION()
 		void Reset();
