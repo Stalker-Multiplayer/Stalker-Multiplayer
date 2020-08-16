@@ -121,11 +121,11 @@ void ABRZoneActor::BeginPlay()
 			{
 				FVector4 ZoneStage;
 				ZoneStage.X = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
-					ZONE_STAGE_FINAL_SIZE_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
+					ZONE_STAGE_FINAL_SIZE_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 250);
 				ZoneStage.Y = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
-					ZONE_STAGE_WAIT_TIME_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
+					ZONE_STAGE_WAIT_TIME_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 15);
 				ZoneStage.Z = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
-					ZONE_STAGE_SHRINK_TIME_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
+					ZONE_STAGE_SHRINK_TIME_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 15);
 				ZoneStage.W = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
 					ZONE_STAGE_DAMAGE_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
 

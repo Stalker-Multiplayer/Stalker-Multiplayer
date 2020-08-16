@@ -98,11 +98,11 @@ void ABRBlowoutActor::BeginPlay()
 			{
 				FVector4 ZoneStage;
 				ZoneStage.X = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
-					BLOWOUT_STAGE_WAIT_TIME_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
+					BLOWOUT_STAGE_WAIT_TIME_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 200);
 				ZoneStage.Y = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
-					BLOWOUT_STAGE_WARNING_TIME_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
+					BLOWOUT_STAGE_WARNING_TIME_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 120);
 				ZoneStage.Z = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
-					BLOWOUT_STAGE_DURATION_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
+					BLOWOUT_STAGE_DURATION_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 50);
 				ZoneStage.W = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
 					BLOWOUT_STAGE_DAMAGE_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
 
@@ -110,12 +110,12 @@ void ABRBlowoutActor::BeginPlay()
 				SecondsTillTheEnd += ZoneStage.X + ZoneStage.Y + ZoneStage.Z;
 
 				FVector SafeZoneStage;
-				ZoneStage.X = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
-					BLOWOUT_STAGE_SAFECOUNT_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
-				ZoneStage.Y = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
-					BLOWOUT_STAGE_SAFESIZESTART_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
-				ZoneStage.Z = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
-					BLOWOUT_STAGE_SAFESIZEEND_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 1);
+				SafeZoneStage.X = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
+					BLOWOUT_STAGE_SAFECOUNT_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 2);
+				SafeZoneStage.Y = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
+					BLOWOUT_STAGE_SAFESIZESTART_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 150);
+				SafeZoneStage.Z = GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(ESettingsType::Server,
+					BLOWOUT_STAGE_SAFESIZEEND_SETTING_KEY.Replace(TEXT("{Map}"), *LevelName).Replace(TEXT("{StageNum}"), *FString::FromInt(i)), 50);
 
 				SAFECOUNT_SIZESTART_SIZEEND.Add(SafeZoneStage);
 			}

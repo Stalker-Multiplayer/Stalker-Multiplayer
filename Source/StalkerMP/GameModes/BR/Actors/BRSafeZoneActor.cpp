@@ -41,7 +41,8 @@ void ABRSafeZoneActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ABRSafeZoneActor, ChangingSizeRichCurve);
+	DOREPLIFETIME_CONDITION(ABRSafeZoneActor, PlaybackPosition, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(ABRSafeZoneActor, Params, COND_InitialOnly);
 }
 
 void ABRSafeZoneActor::BeginPlay()
@@ -51,8 +52,8 @@ void ABRSafeZoneActor::BeginPlay()
 	ChangingSizeTimeline = NewObject<UTimelineComponent>(this, FName("SizeTimeline"));
 	ChangingSizeTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 	this->BlueprintCreatedComponents.Add(ChangingSizeTimeline); // Add to array so it gets saved
-	ChangingSizeTimeline->SetNetAddressable(); // This component has a stable name that can be referenced for replication
-	ChangingSizeTimeline->SetIsReplicated(true);
+	//ChangingSizeTimeline->SetNetAddressable(); // This component has a stable name that can be referenced for replication
+	//ChangingSizeTimeline->SetIsReplicated(true);
 	ChangingSizeTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_TimelineLength);
 	ChangingSizeTimeline->SetDirectionPropertyName(FName("TimelineDirection"));
 	ChangingSizeTimeline->SetLooping(false);
@@ -63,49 +64,68 @@ void ABRSafeZoneActor::BeginPlay()
 	onSizeChangeCallback.BindUFunction(this, FName{ TEXT("UpdateSize") });
 	ChangingSizeTimeline->AddInterpFloat(ChangingSizeCurve, onSizeChangeCallback);
 
-	ChangingSizeCurve->FloatCurve = ChangingSizeRichCurve;
-	ChangingSizeTimeline->SetTimelineLength(TimelineLength);
+	OnEverythingReplicated();
 }
 
-void ABRSafeZoneActor::OnRep_ChangingSizeRichCurve()
+void ABRSafeZoneActor::OnRep_PlaybackPosition()
 {
-	if (ChangingSizeTimeline)
-	{
-		ChangingSizeCurve->FloatCurve = ChangingSizeRichCurve;
-	}
+	PlaybackPositionReplicated = true;
+	OnEverythingReplicated();
 }
 
-void ABRSafeZoneActor::OnRep_TimelineLength()
+void ABRSafeZoneActor::OnRep_Params()
 {
-	if (ChangingSizeTimeline)
+	ParamsReplicated = true;
+	OnEverythingReplicated();
+}
+
+void ABRSafeZoneActor::OnEverythingReplicated()
+{
+	if (ChangingSizeTimeline && PlaybackPositionReplicated && ParamsReplicated)
 	{
+		int TimelineLength = Params.Z + Params.W;
+
+		ChangingSizeRichCurve = FRichCurve();
+		ChangingSizeRichCurve.AddKey(0, 0);
+		ChangingSizeRichCurve.AddKey(Params.Z, Params.X);
+		if (Params.Y > 0)
+		{
+			ChangingSizeRichCurve.AddKey(TimelineLength - 0.5, Params.Y);
+		}
+		FKeyHandle ZeroKey = ChangingSizeRichCurve.AddKey(TimelineLength, 0);
+		ChangingSizeRichCurve.SetKeyInterpMode(ZeroKey, ERichCurveInterpMode::RCIM_Cubic);
+
 		ChangingSizeTimeline->SetTimelineLength(TimelineLength);
+		ChangingSizeTimeline->SetPlaybackPosition(PlaybackPosition, true, true);
+		ChangingSizeCurve->FloatCurve = ChangingSizeRichCurve;
+
+		ChangingSizeTimeline->Play();
 	}
 }
 
 void ABRSafeZoneActor::UpdateSize(float Size)
 {
 	SetActorScale3D(FVector(Size, Size, Size));
-	if (HasAuthority() && TimelineLength > 0 && ChangingSizeTimeline->GetPlaybackPosition() >= TimelineLength)
-	{
-		Destroy();
+
+	if (HasAuthority()) {
+		PlaybackPosition = ChangingSizeTimeline->GetPlaybackPosition();
+
+		if (ChangingSizeTimeline->GetTimelineLength() > 0 && PlaybackPosition >= ChangingSizeTimeline->GetTimelineLength())
+		{
+			Destroy();
+		}
 	}
 }
 
 void ABRSafeZoneActor::SetParams(float FullSize, float FinalSize, int ExpandDuration, int ShrinkDuration, bool SpawnArtefact)
 {
-	TimelineLength = ExpandDuration + ShrinkDuration + 1;
+	Params.X = FullSize;
+	Params.Y = FinalSize;
+	Params.Z = ExpandDuration;
+	Params.W = ShrinkDuration;
 
-	ChangingSizeRichCurve = FRichCurve();
-	ChangingSizeRichCurve.AddKey(0, 0);
-	ChangingSizeRichCurve.AddKey(ExpandDuration, FullSize);
-	if (FinalSize > 0)
-	{
-		ChangingSizeRichCurve.AddKey(TimelineLength - 0.5, FinalSize);
-	}
-	ChangingSizeRichCurve.AddKey(TimelineLength, 0);
+	PlaybackPositionReplicated = true;
+	ParamsReplicated = true;
 
-	ChangingSizeTimeline->SetTimelineLength(TimelineLength);
-	ChangingSizeCurve->FloatCurve = ChangingSizeRichCurve;
-	ChangingSizeTimeline->Play();
+	OnEverythingReplicated();
 }

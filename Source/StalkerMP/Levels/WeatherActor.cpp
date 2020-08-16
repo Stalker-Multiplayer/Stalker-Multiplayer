@@ -142,9 +142,9 @@ void AWeatherActor::BeginPlay()
 
 	ChangingWeatherTimeline = NewObject<UTimelineComponent>(this, FName("WeatherTimeline"));
 	ChangingWeatherTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
-	//this->BlueprintCreatedComponents.Add(ChangingWeatherTimeline); // Add to array so it gets saved
+	this->BlueprintCreatedComponents.Add(ChangingWeatherTimeline); // Add to array so it gets saved
 	//ChangingWeatherTimeline->SetNetAddressable(); // This component has a stable name that can be referenced for replication
-	ChangingWeatherTimeline->SetIsReplicated(true);
+	//ChangingWeatherTimeline->SetIsReplicated(true);
 	ChangingWeatherTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_TimelineLength);
 	ChangingWeatherTimeline->SetDirectionPropertyName(FName("TimelineDirection"));
 	ChangingWeatherTimeline->SetLooping(false);

@@ -33,11 +33,20 @@ private:
 	UPROPERTY()
 		UCurveFloat* ChangingSizeCurve;
 
-	UPROPERTY(ReplicatedUsing = OnRep_ChangingSizeRichCurve)
+	UPROPERTY()
 		FRichCurve ChangingSizeRichCurve;
 
-	UPROPERTY(ReplicatedUsing = OnRep_TimelineLength)
-		int TimelineLength = -1;
+	UPROPERTY(ReplicatedUsing = OnRep_PlaybackPosition)
+		float PlaybackPosition = -1;
+
+	UPROPERTY()
+		bool PlaybackPositionReplicated = false;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Params)
+		FVector4 Params;
+
+	UPROPERTY()
+		bool ParamsReplicated = false;
 
 
 protected:
@@ -57,10 +66,13 @@ protected:
 private:
 
 	UFUNCTION()
-		void OnRep_ChangingSizeRichCurve();
+		void OnRep_PlaybackPosition();
 
 	UFUNCTION()
-		void OnRep_TimelineLength();
+		void OnRep_Params();
+
+	UFUNCTION()
+		void OnEverythingReplicated();
 
 	UFUNCTION()
 		void UpdateSize(float Size);
