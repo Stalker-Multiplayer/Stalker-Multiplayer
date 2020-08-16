@@ -284,6 +284,7 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	PlayerName = NewController->PlayerState->GetPlayerName();
 	Client_OnPossess();
 	InventoryComponent->OnPossess();
 }

@@ -146,6 +146,9 @@ private:
 	UPROPERTY()
 		float PainStrength = 0.0F;
 
+	UPROPERTY()
+		FString PlayerName;
+
 
 protected:
 
@@ -681,5 +684,8 @@ public:
 
 	UFUNCTION()
 		TArray<FHitResult> LineTraceMulti(ECollisionChannel Channel, int Length, float OffsetAngle, bool ReturnMaterial, bool DrawDebug);
+
+	UFUNCTION()
+		FString GetPlayerName() { return PlayerName; }
 
 };

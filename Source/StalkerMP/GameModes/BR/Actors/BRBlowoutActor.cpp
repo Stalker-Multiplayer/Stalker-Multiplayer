@@ -37,7 +37,7 @@ ABRBlowoutActor::ABRBlowoutActor()
 
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnBox"));
 	SpawnBox->SetMobility(EComponentMobility::Static);
-	SpawnBox->SetBoxExtent(FVector(55000, 55000, 5000), false);
+	SpawnBox->SetBoxExtent(FVector(40000, 40000, 5000), false);
 	SpawnBox->SetCollisionProfileName(TEXT("NoCollision"));
 	SpawnBox->CanCharacterStepUpOn = ECB_No;
 	SpawnBox->SetGenerateOverlapEvents(false);

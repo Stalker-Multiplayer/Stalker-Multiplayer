@@ -366,7 +366,7 @@ void ABasePlayerController::OnMatchStateUpdated(EMatchState NewMatchState)
 
 void ABasePlayerController::OnPlayerCharacterDied(APlayerCharacter* PlayerCharacter, AController* Controller, AController* InstigatedBy, AActor* DamageCauser)
 {
-	FString DiedPlayerName = Controller->PlayerState->GetPlayerName();
+	FString DiedPlayerName = PlayerCharacter->GetPlayerName();
 	FString KillerName;
 	if (InstigatedBy)
 	{
