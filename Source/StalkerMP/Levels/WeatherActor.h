@@ -124,6 +124,12 @@ class STALKERMP_API AWeatherActor : public AActor
 
 
 
+// ------------------------------------------------------------------------- Constants --------------------------------------------------------------------------
+		
+	static const FString ALLOWED_WEATHERS_SETTING_KEY;
+	static const FString DEFAULT_ALLOWED_WEATHERS;
+
+
 
 // ------------------------------------------------------------------------- Function Overrides --------------------------------------------------------------------------
 
@@ -341,13 +347,13 @@ private:
 		void Multicast_GenerateWeather(int StartTime, int Seed, FTimecode FinalTime, int SecondsForChange, bool ForceNextDay, const TArray<FString> &TheAllowedWeathers);
 
 	UFUNCTION(NetMulticast, Reliable)
-		void Multicast_OverrideWeatherNormal(const TArray<FString> &BetweenWeatherTypesConst, FTimecode StartTime, const TArray<FTimecode> &BetweenTimesConst, FTimecode EndTime, bool KeepSunMovement);
+		void Multicast_OverrideWeatherNormal(int Seed, const TArray<FString> &BetweenWeatherTypesConst, FTimecode StartTime, const TArray<FTimecode> &BetweenTimesConst, FTimecode EndTime, bool KeepSunMovement);
 
 	UFUNCTION(NetMulticast, Reliable)
-		void Multicast_OverrideWeatherSpecial(const FString &WeatherType, FTimecode StartTime, FTimecode StartFullTime, FTimecode EndFullTime, FTimecode EndTime);
+		void Multicast_OverrideWeatherSpecial(int Seed, const FString &WeatherType, FTimecode StartTime, FTimecode StartFullTime, FTimecode EndFullTime, FTimecode EndTime);
 
 	UFUNCTION()
-		void DoOverrideWeather(TArray<FWeatherTimeOfDayData> &WeathersToInsert, TArray<FString> &WeatherTypesToInsert, FTimecode StartTime, FTimecode EndTime, bool KeepSunMovement);
+		void DoOverrideWeather(int Seed, TArray<FWeatherTimeOfDayData> &WeathersToInsert, TArray<FString> &WeatherTypesToInsert, FTimecode StartTime, FTimecode EndTime, bool KeepSunMovement);
 
 
 protected:

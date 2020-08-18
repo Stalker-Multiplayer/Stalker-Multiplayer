@@ -37,7 +37,7 @@ ABRBlowoutActor::ABRBlowoutActor()
 
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnBox"));
 	SpawnBox->SetMobility(EComponentMobility::Static);
-	SpawnBox->SetBoxExtent(FVector(40000, 40000, 5000), false);
+	SpawnBox->SetBoxExtent(FVector(45000, 45000, 5000), false);
 	SpawnBox->SetCollisionProfileName(TEXT("NoCollision"));
 	SpawnBox->CanCharacterStepUpOn = ECB_No;
 	SpawnBox->SetGenerateOverlapEvents(false);
@@ -183,8 +183,8 @@ void ABRBlowoutActor::Start(FTimecode MatchStartTime, FTimecode WeatherTimePass)
 		TimeScales.Add(TimeScale);
 	}
 
-	float TimepassScale = USMPFunctions::TimecodeToSeconds(WeatherTimePass) / SecondsTillTheEnd;
-	float MatchStartSeconds = USMPFunctions::TimecodeToSeconds(MatchStartTime);
+	float TimepassScale = 1.0 * USMPFunctions::TimecodeToSeconds(WeatherTimePass) / SecondsTillTheEnd;
+	int MatchStartSeconds = USMPFunctions::TimecodeToSeconds(MatchStartTime);
 	for (int i = 0; i < TimeScales.Num(); i++)
 	{
 		FVector4 TimeScale = TimeScales[i];
@@ -241,13 +241,13 @@ void ABRBlowoutActor::WarnAboutBlowout()
 	{
 		FTransform SpawnTransform = FTransform();
 
-		FVector SpawnLocation = UKismetMathLibrary::RandomPointInBoundingBox(GetActorLocation(), SpawnBox->GetScaledBoxExtent());
+		FVector SpawnLocation = UKismetMathLibrary::RandomPointInBoundingBox(GetActorLocation(), SpawnBox->GetUnscaledBoxExtent() - FVector(SafeZone.Y, SafeZone.Y, 0));
 		while (NewSafeZoneOverlapsOld(SpawnLocation, SafeZone.Y, SpawnedZones))
 		{
-			SpawnLocation = UKismetMathLibrary::RandomPointInBoundingBox(GetActorLocation(), SpawnBox->GetScaledBoxExtent());
+			SpawnLocation = UKismetMathLibrary::RandomPointInBoundingBox(GetActorLocation(), SpawnBox->GetUnscaledBoxExtent() - FVector(SafeZone.Y, SafeZone.Y, 0));
 		}
-		SpawnLocation.Z = GetActorLocation().Z + SpawnBox->GetScaledBoxExtent().Z;
-		LinetraceZ(SpawnLocation, GetActorLocation().Z - SpawnBox->GetScaledBoxExtent().Z);
+		SpawnLocation.Z = GetActorLocation().Z + SpawnBox->GetUnscaledBoxExtent().Z;
+		LinetraceZ(SpawnLocation, GetActorLocation().Z - SpawnBox->GetUnscaledBoxExtent().Z);
 
 		SpawnTransform.SetLocation(SpawnLocation);
 

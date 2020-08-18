@@ -9,6 +9,8 @@
 
 #include "BRSafeZoneActor.generated.h"
 
+class ABaseItem;
+
 UCLASS()
 class STALKERMP_API ABRSafeZoneActor : public AActor
 {
@@ -47,6 +49,12 @@ private:
 
 	UPROPERTY()
 		bool ParamsReplicated = false;
+
+	UPROPERTY()
+		bool SpawnArtefactOnDestroy = false;
+
+	UPROPERTY()
+		float SpawnArtefactZOffset = 7.5;
 
 
 protected:

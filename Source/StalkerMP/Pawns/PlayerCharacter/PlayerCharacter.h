@@ -524,10 +524,10 @@ private:
 		void DoAction();
 
 	UFUNCTION()
-		void StartLongAction(float TimeInSeconds, USoundBase* SoundToPlay);
+		void StartLongAction(float TimeInSeconds, USoundBase* UseSound, USoundBase* AfterUseSound);
 
 	UFUNCTION()
-		void FinishLongAction();
+		void FinishLongAction(USoundBase* AfterUseSound);
 
 	UFUNCTION()
 		void CancelLongAction();
@@ -536,7 +536,7 @@ private:
 		void Server_CancelLongAction();
 
 	UFUNCTION(NetMulticast, Reliable)
-		void Multicast_SetLongActionStatus(float LongActionTime, bool TheIsDoingLongAction, USoundBase* SoundToPlay);
+		void Multicast_SetLongActionStatus(float LongActionTime, bool TheIsDoingLongAction, USoundBase* UseSound);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void Server_PickupItem(ABaseItem* Item);
@@ -674,10 +674,19 @@ public:
 	// Etc
 
 	//UFUNCTION()
-		void DoLongAction(float TimeInSeconds, FActionDelegate const& FuncOnStart, FActionDelegate const& FuncOnFinish, USoundBase* SoundToPlay);
+		void DoLongAction(float TimeInSeconds, FActionDelegate const& FuncOnStart, FActionDelegate const& FuncOnFinish, USoundBase* UseSound, USoundBase* AfterUseSound);
 
 	UFUNCTION(BlueprintPure)
 		bool IsDoingLongAction();
+
+	UFUNCTION(Client, Reliable, BlueprintCallable)
+		void Client_PlaySound(USoundBase* Sound);
+
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
+		void Multicast_PlaySound(USoundBase* Sound);
+
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
+		void Multicast_PlaySoundAttached(USoundBase* Sound);
 
 	UFUNCTION()
 		FHitResult LineTraceSingle(ECollisionChannel Channel, int Length, float OffsetAngle, bool ReturnMaterial, bool DrawDebug);

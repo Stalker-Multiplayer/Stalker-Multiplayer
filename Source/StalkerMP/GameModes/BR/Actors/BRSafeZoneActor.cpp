@@ -3,6 +3,8 @@
 
 #include "BRSafeZoneActor.h"
 
+#include "StalkerMP/Items/BaseItem.h"
+
 #include "Components/StaticMeshComponent.h"
 #include "Curves/CurveFloat.h"
 #include "Net/UnrealNetwork.h"
@@ -112,6 +114,16 @@ void ABRSafeZoneActor::UpdateSize(float Size)
 
 		if (ChangingSizeTimeline->GetTimelineLength() > 0 && PlaybackPosition >= ChangingSizeTimeline->GetTimelineLength())
 		{
+			if (SpawnArtefactOnDestroy)
+			{
+				FTransform SpawnTransform;
+				SpawnTransform.SetLocation(GetActorLocation() + FVector(0, 0, SpawnArtefactZOffset));
+
+				FActorSpawnParameters SpawnInfo = FActorSpawnParameters();
+				SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+				GetWorld()->SpawnActor<ABaseItem>(ArtefactItemClass, SpawnTransform, SpawnInfo);
+			}
 			Destroy();
 		}
 	}
@@ -128,4 +140,6 @@ void ABRSafeZoneActor::SetParams(float FullSize, float FinalSize, int ExpandDura
 	ParamsReplicated = true;
 
 	OnEverythingReplicated();
+
+	SpawnArtefactOnDestroy = SpawnArtefact;
 }

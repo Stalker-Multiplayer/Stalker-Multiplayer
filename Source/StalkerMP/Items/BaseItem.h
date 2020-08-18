@@ -79,6 +79,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		USoundBase* UseSound;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		USoundBase* AfterUseSound;
+
 
 public:
 

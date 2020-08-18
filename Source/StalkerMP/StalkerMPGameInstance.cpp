@@ -129,7 +129,17 @@ void UStalkerMPGameInstance::LoadSettings(ESettingsType SettingsType)
 		{
 			FString Key;
 			FString Value;
+
+			Setting.TrimStartAndEndInline();
+
+			if (Setting.Contains("#"))
+			{
+				Setting.Split("#", &Setting, &Value);
+			}
 			Setting.Split("=", &Key, &Value);
+
+			Key.TrimStartAndEndInline();
+			Value.TrimStartAndEndInline();
 
 			PutStringSettingValue(SettingsType, Key, Value);
 		}
@@ -177,7 +187,10 @@ void UStalkerMPGameInstance::SaveSettings(ESettingsType SettingsType)
 		TArray<FString> LinesToSave;
 		for (const TPair<FString, FString>& pair : *MapToSave)
 		{
-			LinesToSave.Add(pair.Key + "=" + pair.Value);
+			if (!pair.Key.IsEmpty() && !pair.Value.IsEmpty())
+			{
+				LinesToSave.Add(pair.Key + "=" + pair.Value);
+			}
 		}
 
 		FFileHelper::SaveStringArrayToFile(LinesToSave, *AbsoluteFilePath);

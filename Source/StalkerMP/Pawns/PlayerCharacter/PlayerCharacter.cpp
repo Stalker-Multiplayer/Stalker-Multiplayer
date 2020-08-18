@@ -1422,7 +1422,7 @@ void APlayerCharacter::UseStackableItem(TSubclassOf<ABaseStackableItem> ItemClas
 	}
 }
 
-void APlayerCharacter::DoLongAction(float TimeInSeconds, FActionDelegate const& FuncOnStart, FActionDelegate const& FuncOnFinish, USoundBase* SoundToPlay)
+void APlayerCharacter::DoLongAction(float TimeInSeconds, FActionDelegate const& FuncOnStart, FActionDelegate const& FuncOnFinish, USoundBase* UseSound, USoundBase* AfterUseSound)
 {
 	if (!IsDoingLongAction())
 	{
@@ -1432,12 +1432,12 @@ void APlayerCharacter::DoLongAction(float TimeInSeconds, FActionDelegate const& 
 		AfterLongAction = FuncOnFinish;
 		AfterLongActionWeaponItem = WeaponItem;
 		FActionDelegate StartLongActionDelegate;
-		StartLongActionDelegate.BindUFunction(this, FName("StartLongAction"), TimeInSeconds, SoundToPlay);
+		StartLongActionDelegate.BindUFunction(this, FName("StartLongAction"), TimeInSeconds, UseSound, AfterUseSound);
 		DrawWeaponForAction(StartLongActionDelegate);
 	}
 }
 
-void APlayerCharacter::StartLongAction(float TimeInSeconds, USoundBase* SoundToPlay)
+void APlayerCharacter::StartLongAction(float TimeInSeconds, USoundBase* UseSound, USoundBase* AfterUseSound)
 {
 	if (HasAuthority())
 	{
@@ -1448,17 +1448,18 @@ void APlayerCharacter::StartLongAction(float TimeInSeconds, USoundBase* SoundToP
 	BeforeLongAction = FActionDelegate();
 
 	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindUFunction(this, FName("FinishLongAction"));
+	TimerDelegate.BindUFunction(this, FName("FinishLongAction"), AfterUseSound);
 	GetWorld()->GetTimerManager().SetTimer(LongActionTimerHandle, TimerDelegate, TimeInSeconds, false);
 
-	Multicast_SetLongActionStatus(TimeInSeconds, true, SoundToPlay);
+	Multicast_SetLongActionStatus(TimeInSeconds, true, UseSound);
 }
 
-void APlayerCharacter::FinishLongAction()
+void APlayerCharacter::FinishLongAction(USoundBase* AfterUseSound)
 {
 	AfterLongAction.ExecuteIfBound();
 	AfterLongAction = FActionDelegate();
 	Multicast_SetLongActionStatus(0, false, nullptr);
+	Multicast_PlaySound(AfterUseSound);
 
 	if (HasAuthority())
 	{
@@ -1502,7 +1503,7 @@ bool APlayerCharacter::IsDoingLongAction()
 	return DoingLongAction;
 }
 
-void APlayerCharacter::Multicast_SetLongActionStatus_Implementation(float LongActionTime, bool TheIsDoingLongAction, USoundBase* SoundToPlay)
+void APlayerCharacter::Multicast_SetLongActionStatus_Implementation(float LongActionTime, bool TheIsDoingLongAction, USoundBase* UseSound)
 {
 	DoingLongAction = TheIsDoingLongAction;
 	UpdateMovingMode();
@@ -1511,7 +1512,7 @@ void APlayerCharacter::Multicast_SetLongActionStatus_Implementation(float LongAc
 	{
 		if (!HasAuthority())
 		{
-			LongActionAudioComponent = UGameplayStatics::SpawnSoundAttached(SoundToPlay, GetMesh(), FName(""),
+			LongActionAudioComponent = UGameplayStatics::SpawnSoundAttached(UseSound, GetMesh(), FName(""),
 				FVector(0, 0, 0), EAttachLocation::KeepRelativeOffset, true, 1.f, 1.f, 0.f, nullptr, nullptr, true);
 		}
 	}
@@ -1547,6 +1548,22 @@ void APlayerCharacter::UseBandage()
 void APlayerCharacter::UseFirstAidKit()
 {
 	UseStackableItem(FirstAidKitItemClass);
+}
+
+void APlayerCharacter::Client_PlaySound_Implementation(USoundBase* SoundToPlay)
+{
+	UGameplayStatics::SpawnSound2D(GetWorld(), SoundToPlay, 1);
+}
+
+void APlayerCharacter::Multicast_PlaySound_Implementation(USoundBase* Sound)
+{
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), Sound, GetActorLocation(), FRotator::ZeroRotator, 1.0, 1.0, 0.f, nullptr, nullptr, true);
+}
+
+void APlayerCharacter::Multicast_PlaySoundAttached_Implementation(USoundBase* Sound)
+{
+	UGameplayStatics::SpawnSoundAttached(Sound, GetCapsuleComponent(), FName(""),
+		FVector(0, 0, 0), EAttachLocation::KeepRelativeOffset, true, 1.f, 1.f, 0.f, nullptr, nullptr, true);
 }
 
 

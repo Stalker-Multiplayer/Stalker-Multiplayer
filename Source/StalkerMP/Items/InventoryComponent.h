@@ -331,12 +331,6 @@ public:
 		// We need this this keep items replication relevant when owner moves
 		void UpdateItemsLocation(FVector Location);
 
-	UFUNCTION(Client, Reliable, BlueprintCallable)
-		void Client_PlaySound(USoundBase* SoundToPlay);
-
-	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
-		void Multicast_PlaySound(USoundBase* SoundToPlay);
-
 	UFUNCTION()
 		void DestroyAllItems();
 

@@ -88,7 +88,7 @@ void UInventoryComponent::AddItemIfNeeded(ABaseItem* Item)
 
 		if (PlayerCharacter && PlayerCharacter->GetController())
 		{
-			Multicast_PlaySound(PickupSound);
+			PlayerCharacter->Multicast_PlaySound(PickupSound);
 			Client_OnItemPickedUp(Item);
 		}
 	}
@@ -231,7 +231,7 @@ void UInventoryComponent::Server_PickupItem_Implementation(ABaseItem* Item)
 			{
 				if (PlayerCharacter->GetController())
 				{
-					Multicast_PlaySound(PickupSound);
+					PlayerCharacter->Multicast_PlaySound(PickupSound);
 				}
 				return;
 			}
@@ -260,7 +260,7 @@ void UInventoryComponent::Server_DropItem_Implementation(ABaseItem* Item)
 	RemoveFromPreviousSlot(Item, false);
 	AllItems.Remove(Item);
 	Client_OnItemDropped(Item);
-	Multicast_PlaySound(DropSound);
+	PlayerCharacter->Multicast_PlaySound(DropSound);
 
 	FTransform ItemSpawnTransformOffset = Item->GetSpawnTransformOffset();
 
@@ -514,7 +514,7 @@ void UInventoryComponent::Backpack_Server_PutItemTo_Implementation(ABaseItem* It
 		}
 
 		Item->SetActorHiddenInGame(true);
-		Client_PlaySound(ItemMoveSound);
+		PlayerCharacter->Client_PlaySound(ItemMoveSound);
 	}
 }
 
@@ -537,14 +537,14 @@ void UInventoryComponent::Backpack_Server_AddToStackAt_Implementation(ABaseStack
 
 				if (StackIncreasedBy > 0)
 				{
-					Client_PlaySound(ItemMoveSound);
+					PlayerCharacter->Client_PlaySound(ItemMoveSound);
 				}
 
 				if (StackableItem->IsStackEmpty())
 				{
 					if (!StackableItem->GetOwner())
 					{
-						Multicast_PlaySound(PickupSound);
+						PlayerCharacter->Multicast_PlaySound(PickupSound);
 					}
 					Server_DestroyItem_Implementation(StackableItem);
 					return;
@@ -583,7 +583,7 @@ void UInventoryComponent::Backpack_Server_AddToExistingStacks_Implementation(ABa
 
 		if (StackIncreasedBy > 0)
 		{
-			Client_PlaySound(ItemMoveSound);
+			PlayerCharacter->Client_PlaySound(ItemMoveSound);
 		}
 				
 		if (StackableItem->IsStackEmpty())
@@ -732,7 +732,7 @@ void UInventoryComponent::Armor_Server_PutItem_Implementation(AArmorItem* TheArm
 
 	ArmorItem = TheArmorItem;
 	TheArmorItem->SetActorHiddenInGame(true);
-	Client_PlaySound(ItemMoveSound);
+	PlayerCharacter->Client_PlaySound(ItemMoveSound);
 
 	PlayerCharacter->SetArmorItem(ArmorItem);
 }
@@ -951,7 +951,7 @@ void UInventoryComponent::Weapon1_Server_PutItem_Implementation(ABaseWeaponItem*
 
 		WeaponSlot1Item = TheWeaponItem;
 		TheWeaponItem->SetActorHiddenInGame(true);
-		Client_PlaySound(ItemMoveSound);
+		PlayerCharacter->Client_PlaySound(ItemMoveSound);
 
 		if (OldWeaponItem == TheWeaponItem)
 		{
@@ -1000,7 +1000,7 @@ void UInventoryComponent::Weapon2_Server_PutItem_Implementation(ABaseWeaponItem*
 
 		WeaponSlot2Item = TheWeaponItem;
 		TheWeaponItem->SetActorHiddenInGame(true);
-		Client_PlaySound(ItemMoveSound);
+		PlayerCharacter->Client_PlaySound(ItemMoveSound);
 
 		if (OldWeaponItem == TheWeaponItem)
 		{
@@ -1076,17 +1076,6 @@ void UInventoryComponent::OnRep_WeaponSlot2Item()
 		Client_OnItemPickedUp_Implementation(WeaponSlot2Item);
 		OnItemUpdate(WeaponSlot2Item);
 	}
-}
-
-void UInventoryComponent::Client_PlaySound_Implementation(USoundBase* SoundToPlay)
-{
-	UGameplayStatics::SpawnSound2D(GetWorld(), SoundToPlay, 1);
-}
-
-void UInventoryComponent::Multicast_PlaySound_Implementation(USoundBase* SoundToPlay)
-{
-	UGameplayStatics::SpawnSoundAttached(SoundToPlay, PlayerCharacter->GetMesh(), FName(""),
-		FVector(0, 0, 0), EAttachLocation::KeepRelativeOffset, true, 1.f, 1.f, 0.f, nullptr, nullptr, true);
 }
 
 void UInventoryComponent::SetPickupSphere(USphereComponent* ThePickupSphere)

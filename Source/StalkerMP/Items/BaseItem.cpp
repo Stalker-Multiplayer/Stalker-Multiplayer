@@ -82,7 +82,7 @@ void ABaseItem::Server_Use_Implementation()
 			BeforeLongActionDelegate.BindUFunction(this, FName("BeforeUse"));
 			FActionDelegate AfterLongActionDelegate;
 			AfterLongActionDelegate.BindUFunction(this, FName("AfterUse"));
-			PlayerCharacter->DoLongAction(LongUseTime, BeforeLongActionDelegate, AfterLongActionDelegate, UseSound);
+			PlayerCharacter->DoLongAction(LongUseTime, BeforeLongActionDelegate, AfterLongActionDelegate, UseSound, AfterUseSound);
 		}
 		else
 		{
