@@ -30,8 +30,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BR")
 		ABRBlowoutActor* BlowoutActor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
-		UMaterialParameterCollection* MapMaterialParameterCollection;
-
 
 };
