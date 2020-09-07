@@ -158,10 +158,13 @@ void UVideoSettingsUI::SetScreenResolution(FIntPoint Resolution)
 
 void UVideoSettingsUI::ApplyScreenSettings()
 {
-	GameUserSettings->RequestResolutionChange(CurrentResolution.X, CurrentResolution.Y, EWindowMode::ConvertIntToWindowMode(CurrentWindowMode), true);
-	GameUserSettings->ConfirmVideoMode();
-	GameUserSettings->SetFullscreenMode(GameUserSettings->GetLastConfirmedFullscreenMode());
-	GameUserSettings->SaveSettings();
+	if (!GetWorld()->IsPlayInEditor())
+	{
+		GameUserSettings->RequestResolutionChange(CurrentResolution.X, CurrentResolution.Y, EWindowMode::ConvertIntToWindowMode(CurrentWindowMode), true);
+		GameUserSettings->ConfirmVideoMode();
+		GameUserSettings->SetFullscreenMode(GameUserSettings->GetLastConfirmedFullscreenMode());
+		GameUserSettings->SaveSettings();
+	}
 
 	GetGameInstance<UStalkerMPGameInstance>()->PutIntSettingValue(ESettingsType::Video, ABasePlayerController::FULLSCREEN_MODE_SETTING_KEY, CurrentWindowMode);
 	GetGameInstance<UStalkerMPGameInstance>()->PutStringSettingValue(ESettingsType::Video, ABasePlayerController::SCREEN_RESOLUTION_SETTING_KEY,
