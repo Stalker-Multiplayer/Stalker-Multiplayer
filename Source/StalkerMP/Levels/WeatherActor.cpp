@@ -171,6 +171,12 @@ void AWeatherActor::BeginPlay()
 		RainParticleSystem->Deactivate();
 		RainDepthCaptureComponent2D->Deactivate();
 
+		TimelinePositionReplicated = true;
+		TimelineLengthReplicated = true;
+		ChangingTimeRichCurveReplicated = true;
+		CurrentWeatherDatasReplicated = true;
+		CurrentWeatherTypesReplicated = true;
+
 		CurrentWeatherDatas = Weathers[CurrentWeatherType].Hours;
 		for (int i = 0; i < CurrentWeatherDatas.Num(); i++)
 		{
@@ -233,10 +239,15 @@ void AWeatherActor::OnRep_CurrentWeatherTypes()
 	OnEverythingReplicated();
 }
 
+bool AWeatherActor::IsEverythingReplicated()
+{
+	return TimelinePositionReplicated && TimelineLengthReplicated && ChangingTimeRichCurveReplicated && CurrentWeatherDatasReplicated && CurrentWeatherTypesReplicated
+		&& ChangingWeatherTimeline;
+}
+
 void AWeatherActor::OnEverythingReplicated()
 {
-	if (TimelinePositionReplicated && TimelineLengthReplicated && ChangingTimeRichCurveReplicated && CurrentWeatherDatasReplicated && CurrentWeatherTypesReplicated
-		&& ChangingWeatherTimeline)
+	if (IsEverythingReplicated())
 	{
 		CurrentWeather = CurrentWeatherDatas[0];
 		CurrentWeatherType = CurrentWeatherTypes[0];
@@ -244,10 +255,17 @@ void AWeatherActor::OnEverythingReplicated()
 		NextWeatherType = CurrentWeatherTypes[1];
 		WeatherDataIsReady = true;
 
-		ChangingTimeCurve->FloatCurve = ChangingTimeRichCurve;
-		ChangingWeatherTimeline->SetTimelineLength(TimelineLength);
-		ChangingWeatherTimeline->SetPlaybackPosition(TimelinePosition, false, true);
-		ChangingWeatherTimeline->Play();
+		if (MissedGenerateWeatherRequest.StartTime >= 0)
+		{
+			Multicast_GenerateWeather_Implementation(MissedGenerateWeatherRequest);
+		}
+		else
+		{
+			ChangingTimeCurve->FloatCurve = ChangingTimeRichCurve;
+			ChangingWeatherTimeline->SetTimelineLength(TimelineLength);
+			ChangingWeatherTimeline->SetPlaybackPosition(TimelinePosition, false, true);
+			ChangingWeatherTimeline->Play();
+		}
 	}
 }
 
@@ -382,25 +400,55 @@ void AWeatherActor::AddTime(FTimecode Time, int SecondsForChange)
 
 void AWeatherActor::SetTimeOfDay(FTimecode FinalTime, int SecondsForChange, bool ForceNextDay)
 {
-	Multicast_GenerateWeather(CurrentTime, FMath::Rand(), FinalTime, SecondsForChange, ForceNextDay, AllowedWeathers);
+	FString LastWeatherType = NextWeatherType;
+	for (int i = 1; i < CurrentWeatherTypes.Num(); i++)
+	{
+		if (AllowedWeathers.Contains(CurrentWeatherTypes[i]))
+		{
+			LastWeatherType = CurrentWeatherTypes[i];
+			break;
+		}
+	}
+
+	if (!AllowedWeathers.Contains(LastWeatherType))
+	{
+		LastWeatherType = AllowedWeathers[UKismetMathLibrary::RandomInteger(AllowedWeathers.Num())];
+	}
+
+	FGenerateWeatherData GenerateWeatherData;
+	GenerateWeatherData.LastWeatherType = LastWeatherType;
+	GenerateWeatherData.StartTime = CurrentTime;
+	GenerateWeatherData.Seed = FMath::Rand();
+	GenerateWeatherData.FinalTime = FinalTime;
+	GenerateWeatherData.SecondsForChange = SecondsForChange;
+	GenerateWeatherData.ForceNextDay = ForceNextDay;
+	GenerateWeatherData.AllowedWeathers = AllowedWeathers;
+
+	Multicast_GenerateWeather(GenerateWeatherData);
 }
 
-void AWeatherActor::Multicast_GenerateWeather_Implementation(int StartTime, int Seed, FTimecode FinalTime, int SecondsForChange, bool ForceNextDay, const TArray<FString> &TheAllowedWeathers)
+void AWeatherActor::Multicast_GenerateWeather_Implementation(FGenerateWeatherData GenerateWeatherData)
 {
-	ValidateAndFixTimecode(FinalTime);
+	if (!IsEverythingReplicated())
+	{
+		MissedGenerateWeatherRequest = GenerateWeatherData;
+		return;
+	}
 
-	CurrentTime = StartTime;
+	ValidateAndFixTimecode(GenerateWeatherData.FinalTime);
+
+	CurrentTime = GenerateWeatherData.StartTime;
 	WeatherDataIsReady = false;
 
 	ChangingWeatherTimeline->Stop();
-	int FinalTimeInSeconds = USMPFunctions::TimecodeToSeconds(FinalTime);
+	int FinalTimeInSeconds = USMPFunctions::TimecodeToSeconds(GenerateWeatherData.FinalTime);
 
-	FRandomStream RandomStream = FRandomStream(Seed);
+	FRandomStream RandomStream = FRandomStream(GenerateWeatherData.Seed);
 
-	bool WillBeNextDay = ForceNextDay || CurrentTime >= FinalTimeInSeconds;
+	bool WillBeNextDay = GenerateWeatherData.ForceNextDay || CurrentTime >= FinalTimeInSeconds;
 
 	ChangingTimeRichCurve = FRichCurve();
-	if (SecondsForChange <= 1)
+	if (GenerateWeatherData.SecondsForChange <= 1)
 	{
 		CurrentWeatherDatas.Empty();
 		CurrentWeatherTypes.Empty();
@@ -409,16 +457,16 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int StartTime, int 
 
 		ChangingTimeRichCurve.AddKey(0, FinalTimeInSeconds);
 
-		NextWeatherType = TheAllowedWeathers[RandomStream.RandHelper(TheAllowedWeathers.Num())];
-		CurrentWeatherDatas.Add(FindWeatherData(FinalTime, NextWeatherType));
+		NextWeatherType = GenerateWeatherData.AllowedWeathers[RandomStream.RandHelper(GenerateWeatherData.AllowedWeathers.Num())];
+		CurrentWeatherDatas.Add(FindWeatherData(GenerateWeatherData.FinalTime, NextWeatherType));
 		CurrentWeatherTypes.Add(NextWeatherType);
-		NextWeatherType = TheAllowedWeathers[RandomStream.RandHelper(TheAllowedWeathers.Num())];
-		CurrentWeatherDatas.Add(FindNextWeatherData(FinalTime, NextWeatherType));
+		NextWeatherType = GenerateWeatherData.AllowedWeathers[RandomStream.RandHelper(GenerateWeatherData.AllowedWeathers.Num())];
+		CurrentWeatherDatas.Add(FindNextWeatherData(GenerateWeatherData.FinalTime, NextWeatherType));
 		CurrentWeatherTypes.Add(NextWeatherType);
 	}
 	else
 	{
-		TimelineLength = SecondsForChange;
+		TimelineLength = GenerateWeatherData.SecondsForChange;
 
 		FKeyHandle KeyHandle;
 		KeyHandle = ChangingTimeRichCurve.AddKey(0, CurrentTime);
@@ -427,7 +475,7 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int StartTime, int 
 		if (WillBeNextDay)
 		{
 			float SecondsTillNextDay = USMPFunctions::SECONDS_IN_DAY - CurrentTime;
-			SecondsTillNextDay = (SecondsTillNextDay / (SecondsTillNextDay + FinalTimeInSeconds)) * SecondsForChange;
+			SecondsTillNextDay = (SecondsTillNextDay / (SecondsTillNextDay + FinalTimeInSeconds)) * GenerateWeatherData.SecondsForChange;
 
 			KeyHandle = ChangingTimeRichCurve.AddKey(SecondsTillNextDay - 0.01f, USMPFunctions::SECONDS_IN_DAY);
 			if (FinalTimeInSeconds != 0)
@@ -451,31 +499,25 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int StartTime, int 
 			}
 		}
 
-		if (IndexToDeleteFrom == -1)
-		{
-			CurrentWeather = CurrentWeatherDatas[CurrentWeatherDatas.Num() - 1];
-			CurrentWeatherType = CurrentWeatherTypes[CurrentWeatherTypes.Num() - 1];
-			NextWeatherType = TheAllowedWeathers[RandomStream.RandHelper(TheAllowedWeathers.Num())];
-			NextWeather = FindNextWeatherData(CurrentWeather.StartTime, NextWeatherType);
-			CurrentWeatherDatas.Add(NextWeather);
-			CurrentWeatherTypes.Add(NextWeatherType);
-		}
-		else
+		if (IndexToDeleteFrom >= 0)
 		{
 			while (CurrentWeatherDatas.Num() > IndexToDeleteFrom)
 			{
 				CurrentWeatherDatas.RemoveAt(IndexToDeleteFrom);
 				CurrentWeatherTypes.RemoveAt(IndexToDeleteFrom);
 			}
-			NextWeather = CurrentWeatherDatas[CurrentWeatherDatas.Num() - 1];
-			NextWeatherType = CurrentWeatherTypes[CurrentWeatherTypes.Num() - 1];
-			CurrentWeather = NextWeather;
-			CurrentWeatherType = NextWeatherType;
 		}
+
+		CurrentWeather = CurrentWeatherDatas[CurrentWeatherDatas.Num() - 1];
+		CurrentWeatherType = CurrentWeatherTypes[CurrentWeatherTypes.Num() - 1];
+		NextWeatherType = GenerateWeatherData.LastWeatherType;
+		NextWeather = FindNextWeatherData(CurrentWeather.StartTime, NextWeatherType);
+		CurrentWeatherDatas.Add(NextWeather);
+		CurrentWeatherTypes.Add(NextWeatherType);
 
 		while (WillBeNextDay || USMPFunctions::TimecodeToSeconds(CurrentWeather.StartTime) <= FinalTimeInSeconds)
 		{
-			NextWeatherType = CalculateNextWeatherType(RandomStream, TheAllowedWeathers);
+			NextWeatherType = CalculateNextWeatherType(RandomStream, GenerateWeatherData.AllowedWeathers);
 
 			NextWeather = FindNextWeatherData(CurrentWeather.StartTime, NextWeatherType);
 			CurrentWeatherDatas.Add(NextWeather);
@@ -513,34 +555,49 @@ void AWeatherActor::Multicast_GenerateWeather_Implementation(int StartTime, int 
 
 void AWeatherActor::OverrideWeatherNormal(const TArray<FString> &BetweenWeatherTypes, FTimecode StartTime, const TArray<FTimecode> &BetweenTimes, FTimecode EndTime, bool KeepSunMovement)
 {
-	Multicast_OverrideWeatherNormal(FMath::Rand(), BetweenWeatherTypes, StartTime, BetweenTimes, EndTime, KeepSunMovement);
+	FOverrideWeatherNormalData OverrideWeatherNormalData;
+	OverrideWeatherNormalData.Seed = FMath::Rand();
+	OverrideWeatherNormalData.BetweenWeatherTypes = BetweenWeatherTypes;
+	OverrideWeatherNormalData.StartTime = StartTime;
+	OverrideWeatherNormalData.BetweenTimes = BetweenTimes;
+	OverrideWeatherNormalData.EndTime = EndTime;
+	OverrideWeatherNormalData.KeepSunMovement = KeepSunMovement;
+
+	Multicast_OverrideWeatherNormal(OverrideWeatherNormalData);
 }
 
-void AWeatherActor::Multicast_OverrideWeatherNormal_Implementation(int Seed, const TArray<FString> &BetweenWeatherTypesConst, FTimecode StartTime, const TArray<FTimecode> &BetweenTimesConst, FTimecode EndTime, bool KeepSunMovement)
+void AWeatherActor::Multicast_OverrideWeatherNormal_Implementation(FOverrideWeatherNormalData OverrideWeatherNormalData)
 {
-	TArray<FString> BetweenWeatherTypes = BetweenWeatherTypesConst;
 	TArray<FWeatherTimeOfDayData> BetweenWeathers;
-	for (int i = 0; i < BetweenTimesConst.Num(); i++)
+	for (int i = 0; i < OverrideWeatherNormalData.BetweenTimes.Num(); i++)
 	{
-		FWeatherTimeOfDayData WeatherData = FindWeatherData(BetweenTimesConst[i], BetweenWeatherTypes[i]);
-		WeatherData.StartTime = BetweenTimesConst[i];
+		FWeatherTimeOfDayData WeatherData = FindWeatherData(OverrideWeatherNormalData.BetweenTimes[i], OverrideWeatherNormalData.BetweenWeatherTypes[i]);
+		WeatherData.StartTime = OverrideWeatherNormalData.BetweenTimes[i];
 		BetweenWeathers.Add(WeatherData);
 	}
 
-	DoOverrideWeather(Seed, BetweenWeathers, BetweenWeatherTypes, StartTime, EndTime, KeepSunMovement);
+	DoOverrideWeather(OverrideWeatherNormalData.Seed, BetweenWeathers, OverrideWeatherNormalData.BetweenWeatherTypes, OverrideWeatherNormalData.StartTime, OverrideWeatherNormalData.EndTime, OverrideWeatherNormalData.KeepSunMovement);
 }
 
 void AWeatherActor::OverrideWeatherSpecial(FString WeatherType, FTimecode StartTime, FTimecode StartFullTime, FTimecode EndFullTime, FTimecode EndTime)
 {
-	Multicast_OverrideWeatherSpecial(FMath::Rand(), WeatherType, StartTime, StartFullTime, EndFullTime, EndTime);
+	FOverrideWeatherSpecialData OverrideWeatherSpecialData;
+	OverrideWeatherSpecialData.Seed = FMath::Rand();
+	OverrideWeatherSpecialData.WeatherType = WeatherType;
+	OverrideWeatherSpecialData.StartTime = StartTime;
+	OverrideWeatherSpecialData.StartFullTime = StartFullTime;
+	OverrideWeatherSpecialData.EndFullTime = EndFullTime;
+	OverrideWeatherSpecialData.EndTime = EndTime;
+
+	Multicast_OverrideWeatherSpecial(OverrideWeatherSpecialData);
 }
 
-void AWeatherActor::Multicast_OverrideWeatherSpecial_Implementation(int Seed, const FString &WeatherType, FTimecode StartTime, FTimecode StartFullTime, FTimecode EndFullTime, FTimecode EndTime)
+void AWeatherActor::Multicast_OverrideWeatherSpecial_Implementation(FOverrideWeatherSpecialData OverrideWeatherSpecialData)
 {
-	int StartFullTimeSeconds = USMPFunctions::TimecodeToSeconds(StartFullTime);
-	int EndFullTimeSeconds = USMPFunctions::TimecodeToSeconds(EndFullTime);
+	int StartFullTimeSeconds = USMPFunctions::TimecodeToSeconds(OverrideWeatherSpecialData.StartFullTime);
+	int EndFullTimeSeconds = USMPFunctions::TimecodeToSeconds(OverrideWeatherSpecialData.EndFullTime);
 
-	TArray<FWeatherTimeOfDayData> WeathersToInsert = SpecialWeathers[WeatherType].Hours;
+	TArray<FWeatherTimeOfDayData> WeathersToInsert = SpecialWeathers[OverrideWeatherSpecialData.WeatherType].Hours;
 
 	int WeathersToInsertTimespan = USMPFunctions::TimecodeToSeconds(WeathersToInsert[WeathersToInsert.Num() - 1].StartTime);
 	int OverrideTimeDiff = EndFullTimeSeconds - StartFullTimeSeconds;
@@ -562,7 +619,7 @@ void AWeatherActor::Multicast_OverrideWeatherSpecial_Implementation(int Seed, co
 		WeathersToInsert[i].StartTime = USMPFunctions::SecondsToTimecode(WeatherSeconds);
 	}
 
-	DoOverrideWeather(Seed, WeathersToInsert, SpecialWeathers[WeatherType].WeatherTypes, StartTime, EndTime, false);
+	DoOverrideWeather(OverrideWeatherSpecialData.Seed, WeathersToInsert, SpecialWeathers[OverrideWeatherSpecialData.WeatherType].WeatherTypes, OverrideWeatherSpecialData.StartTime, OverrideWeatherSpecialData.EndTime, false);
 }
 
 void AWeatherActor::DoOverrideWeather(int Seed, TArray<FWeatherTimeOfDayData> &WeathersToInsert, TArray<FString> &WeatherTypesToInsert, FTimecode StartTime, FTimecode EndTime, bool KeepSunMovement)

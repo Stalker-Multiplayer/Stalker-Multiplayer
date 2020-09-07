@@ -117,6 +117,90 @@ public:
 
 };
 
+USTRUCT()
+struct FGenerateWeatherData
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY()
+		FString LastWeatherType;
+
+	UPROPERTY()
+		int StartTime = -1;
+
+	UPROPERTY()
+		int Seed;
+
+	UPROPERTY()
+		FTimecode FinalTime;
+
+	UPROPERTY()
+		int SecondsForChange;
+
+	UPROPERTY()
+		bool ForceNextDay;
+
+	UPROPERTY()
+		TArray<FString> AllowedWeathers;
+
+};
+
+USTRUCT()
+struct FOverrideWeatherNormalData
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY()
+		int Seed;
+	
+	UPROPERTY()
+		TArray<FString> BetweenWeatherTypes;
+	
+	UPROPERTY()
+		FTimecode StartTime;
+	
+	UPROPERTY()
+		TArray<FTimecode> BetweenTimes;
+	
+	UPROPERTY()
+		FTimecode EndTime;
+	
+	UPROPERTY()
+		bool KeepSunMovement;
+
+};
+
+USTRUCT()
+struct FOverrideWeatherSpecialData
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY()
+		int Seed;
+	
+	UPROPERTY()
+		FString WeatherType;
+	
+	UPROPERTY()
+		FTimecode StartTime;
+	
+	UPROPERTY()
+		FTimecode StartFullTime;
+	
+	UPROPERTY()
+		FTimecode EndFullTime;
+	
+	UPROPERTY()
+		FTimecode EndTime;
+
+};
+
 UCLASS()
 class STALKERMP_API AWeatherActor : public AActor
 {
@@ -155,6 +239,9 @@ private:
 
 	UPROPERTY()
 		UCurveFloat* ChangingTimeCurve;
+
+	UPROPERTY()
+		FGenerateWeatherData MissedGenerateWeatherRequest;
 
 	UPROPERTY()
 		FWeatherTimeOfDayData CurrentWeather;
@@ -311,6 +398,9 @@ private:
 		void OnRep_CurrentWeatherTypes();
 
 	UFUNCTION()
+		bool IsEverythingReplicated();
+
+	UFUNCTION()
 		void OnEverythingReplicated();
 
 	UFUNCTION()
@@ -344,13 +434,13 @@ private:
 		float CalculateWeatherLerpF(FTimecode StartTime, FTimecode EndTime, float Time);
 
 	UFUNCTION(NetMulticast, Reliable)
-		void Multicast_GenerateWeather(int StartTime, int Seed, FTimecode FinalTime, int SecondsForChange, bool ForceNextDay, const TArray<FString> &TheAllowedWeathers);
+		void Multicast_GenerateWeather(FGenerateWeatherData GenerateWeatherData);
 
 	UFUNCTION(NetMulticast, Reliable)
-		void Multicast_OverrideWeatherNormal(int Seed, const TArray<FString> &BetweenWeatherTypesConst, FTimecode StartTime, const TArray<FTimecode> &BetweenTimesConst, FTimecode EndTime, bool KeepSunMovement);
+		void Multicast_OverrideWeatherNormal(FOverrideWeatherNormalData OverrideWeatherNormalData);
 
 	UFUNCTION(NetMulticast, Reliable)
-		void Multicast_OverrideWeatherSpecial(int Seed, const FString &WeatherType, FTimecode StartTime, FTimecode StartFullTime, FTimecode EndFullTime, FTimecode EndTime);
+		void Multicast_OverrideWeatherSpecial(FOverrideWeatherSpecialData OverrideWeatherSpecialData);
 
 	UFUNCTION()
 		void DoOverrideWeather(int Seed, TArray<FWeatherTimeOfDayData> &WeathersToInsert, TArray<FString> &WeatherTypesToInsert, FTimecode StartTime, FTimecode EndTime, bool KeepSunMovement);
