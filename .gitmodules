@@ -1,0 +1,3 @@
+[submodule "Content/Levels/StalkerLevels"]
+	path = Content/Levels/StalkerLevels
+	url = https://github.com/Stalker-Multiplayer/Stalker-Multiplayer-StalkerLevels.git
