@@ -53,7 +53,7 @@ void UGeneralSettingsUI::NativeConstruct()
 
 	// Other
 
-	SetHideUI(GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(
+	SetHideUI((bool) GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(
 		ESettingsType::General,
 		ABasePlayerController::HIDE_UI_SETTING_KEY,
 		ABasePlayerController::DEFAULT_HIDE_UI));

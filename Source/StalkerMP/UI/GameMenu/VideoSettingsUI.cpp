@@ -105,7 +105,7 @@ void UVideoSettingsUI::NativeConstruct()
 		ABasePlayerController::BLOOM_SETTING_KEY,
 		ABasePlayerController::DEFAULT_BLOOM) > 0);
 
-	SetParallax(GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(
+	SetParallax((bool) GetGameInstance<UStalkerMPGameInstance>()->GetIntSettingValue(
 		ESettingsType::Video,
 		ABasePlayerController::PARALLAX_SETTING_KEY,
 		ABasePlayerController::DEFAULT_PARALLAX));
