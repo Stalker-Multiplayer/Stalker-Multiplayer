@@ -123,7 +123,6 @@ enum class EPlayerAction : uint8
 	StrafeLeft					UMETA(DisplayName = "StrafeLeft"),
 	StrafeRight					UMETA(DisplayName = "StrafeRight"),
 	Sprint						UMETA(DisplayName = "Sprint"),
-	Walk						UMETA(DisplayName = "Walk"),
 	Jump						UMETA(DisplayName = "Jump"),
 	Crouch						UMETA(DisplayName = "Crouch"),
 

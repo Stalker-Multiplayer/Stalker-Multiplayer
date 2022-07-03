@@ -131,9 +131,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_CROUCH, IE_Pressed, this, &APlayerCharacter::CallCrouch);
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_CROUCH, IE_Released, this, &APlayerCharacter::CallUnCrouch);
 
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_WALK, IE_Pressed, this, &APlayerCharacter::Walk);
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_WALK, IE_Released, this, &APlayerCharacter::StopWalking);
-
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_SPRINT, IE_Pressed, this, &APlayerCharacter::Sprint);
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_SPRINT, IE_Released, this, &APlayerCharacter::StopSprinting);
 
@@ -402,12 +399,6 @@ void APlayerCharacter::UpdateMovingMode()
 		bUseControllerRotationYaw = true;
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 	}
-	else if (bWalkActionPressed)
-	{
-		MovingMode = EMovingMode::Walking;
-		bUseControllerRotationYaw = true;
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-	}
 	else if (bSprintActionPressed && WeaponHoldState != EWeaponHoldState::Reloading && ArmorAllowsRunning())
 	{
 		MovingMode = EMovingMode::Sprinting;
@@ -579,32 +570,6 @@ void APlayerCharacter::CallUnCrouch()
 	UnCrouch(true);
 	TargetCameraCrouchLerp = 0;
 	UpdateMovingMode();
-}
-
-void APlayerCharacter::Walk()
-{
-	bWalkActionPressed = true;
-	UpdateMovingMode();
-	Server_WalkPressed(true);
-}
-
-void APlayerCharacter::StopWalking()
-{
-	bWalkActionPressed = false;
-	UpdateMovingMode();
-	Server_WalkPressed(false);
-}
-
-void APlayerCharacter::Server_WalkPressed_Implementation(bool Pressed)
-{
-	bWalkActionPressed = Pressed;
-	UpdateMovingMode();
-}
-
-bool APlayerCharacter::Server_WalkPressed_Validate(bool Pressed)
-{
-	// We don't validate yet
-	return true;
 }
 
 void APlayerCharacter::Sprint()

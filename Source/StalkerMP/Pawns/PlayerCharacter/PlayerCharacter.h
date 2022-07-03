@@ -87,9 +87,6 @@ private:
 		bool bAimActionPressed = false;
 
 	UPROPERTY()
-		bool bWalkActionPressed = false;
-
-	UPROPERTY()
 		bool bSprintActionPressed = false;
 
 	UPROPERTY()
@@ -372,15 +369,6 @@ private:
 
 	UFUNCTION()
 		void CallUnCrouch();
-
-	UFUNCTION()
-		void Walk();
-
-	UFUNCTION()
-		void StopWalking();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-		void Server_WalkPressed(bool Pressed);
 
 	UFUNCTION()
 		void Sprint();

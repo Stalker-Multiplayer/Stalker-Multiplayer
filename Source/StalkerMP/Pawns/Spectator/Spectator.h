@@ -54,13 +54,7 @@ protected:
 	// Movement
 
 	UPROPERTY()
-		bool bWalkActionPressed = false;
-
-	UPROPERTY()
 		bool bSprintActionPressed = false;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-		float WalkingSpeed = 900;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 		float RunningSpeed = 1800;
@@ -89,12 +83,6 @@ private:
 
 	UFUNCTION()
 		void MoveUp(float Value);
-
-	UFUNCTION()
-		void Walk();
-
-	UFUNCTION()
-		void StopWalking();
 
 	UFUNCTION()
 		void Sprint();

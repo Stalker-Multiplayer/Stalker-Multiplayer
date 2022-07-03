@@ -124,7 +124,6 @@ public:
 	static const FName ACTION_TURN_RIGHT;
 	static const FName ACTION_LOOK_UP;
 	static const FName ACTION_SPRINT;
-	static const FName ACTION_WALK;
 	static const FName ACTION_JUMP;
 	static const FName ACTION_CROUCH;
 

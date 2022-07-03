@@ -70,9 +70,6 @@ void ASpectator::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAxis(ABasePlayerController::ACTION_TURN_RIGHT, this, &ASpectator::AddControllerYawInput);
 	PlayerInputComponent->BindAxis(ABasePlayerController::ACTION_LOOK_UP, this, &ASpectator::AddControllerPitchInput);
 
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_WALK, IE_Pressed, this, &ASpectator::Walk);
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_WALK, IE_Released, this, &ASpectator::StopWalking);
-
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_SPRINT, IE_Pressed, this, &ASpectator::Sprint);
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_SPRINT, IE_Released, this, &ASpectator::StopSprinting);
 }
@@ -91,11 +88,7 @@ void ASpectator::AddControllerPitchInput(float Val)
 
 void ASpectator::UpdateMovingMode()
 {
-	if (bWalkActionPressed)
-	{
-		FloatingPawnMovement->MaxSpeed = WalkingSpeed;
-	}
-	else if (bSprintActionPressed)
+	if (bSprintActionPressed)
 	{
 		FloatingPawnMovement->MaxSpeed = SprintingSpeed;
 	}
@@ -136,18 +129,6 @@ void ASpectator::MoveUp(float Value)
 		const FVector Direction = FRotationMatrix(FRotator(0, 0, 0)).GetUnitAxis(EAxis::Z);
 		AddMovementInput(Direction, Value);
 	}
-}
-
-void ASpectator::Walk()
-{
-	bWalkActionPressed = true;
-	UpdateMovingMode();
-}
-
-void ASpectator::StopWalking()
-{
-	bWalkActionPressed = false;
-	UpdateMovingMode();
 }
 
 void ASpectator::Sprint()

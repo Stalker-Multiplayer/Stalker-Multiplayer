@@ -37,16 +37,10 @@ private:
 	const FString DEFAULT_STRAFE_RIGHT_SECONDARY = "None,False,False,False,False";
 	const FString DEFAULT_SPRINT = "LeftShift,False,False,False,False";
 	const FString DEFAULT_SPRINT_SECONDARY = "None,False,False,False,False";
-	const FString DEFAULT_WALK = "LeftControl,False,False,False,False";
-	const FString DEFAULT_WALK_SECONDARY = "None,False,False,False,False";
 	const FString DEFAULT_JUMP = "SpaceBar,False,False,False,False";
 	const FString DEFAULT_JUMP_SECONDARY = "None,False,False,False,False";
 	const FString DEFAULT_CROUCH = "C,False,False,False,False";
 	const FString DEFAULT_CROUCH_SECONDARY = "None,False,False,False,False";
-	const FString DEFAULT_LEAN_LEFT = "Q,False,False,False,False";
-	const FString DEFAULT_LEAN_LEFT_SECONDARY = "None,False,False,False,False";
-	const FString DEFAULT_LEAN_RIGHT = "E,False,False,False,False";
-	const FString DEFAULT_LEAN_RIGHT_SECONDARY = "None,False,False,False,False";
 
 	// Firing
 	const FString DEFAULT_FIRE_PRIMARY = "LeftMouseButton,False,False,False,False";

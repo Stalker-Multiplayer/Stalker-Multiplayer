@@ -29,7 +29,6 @@ void UControlsSettingsUI::NativeConstruct()
 	ReadAndApplyKeySetting(EPlayerAction::Jump);
 	ReadAndApplyKeySetting(EPlayerAction::Crouch);
 	ReadAndApplyKeySetting(EPlayerAction::Sprint);
-	ReadAndApplyKeySetting(EPlayerAction::Walk);
 	
 	// Firing
 	ReadAndApplyKeySetting(EPlayerAction::FirePrimary);
@@ -64,7 +63,6 @@ FString UControlsSettingsUI::PlayerActionToConfigName(EPlayerAction PlayerAction
 	case EPlayerAction::StrafeLeft: ConfigName = ABasePlayerController::ACTION_STRAFE_LEFT.ToString(); break;
 	case EPlayerAction::StrafeRight: ConfigName = ABasePlayerController::ACTION_STRAFE_RIGHT.ToString(); break;
 	case EPlayerAction::Sprint: ConfigName = ABasePlayerController::ACTION_SPRINT.ToString(); break;
-	case EPlayerAction::Walk: ConfigName = ABasePlayerController::ACTION_WALK.ToString(); break;
 	case EPlayerAction::Jump: ConfigName = ABasePlayerController::ACTION_JUMP.ToString(); break;
 	case EPlayerAction::Crouch: ConfigName = ABasePlayerController::ACTION_CROUCH.ToString(); break;
 
@@ -105,7 +103,6 @@ FString UControlsSettingsUI::DefaultPlayerActionKey(EPlayerAction PlayerAction, 
 	case EPlayerAction::StrafeLeft: if (!IsSecondary) return DEFAULT_STRAFE_LEFT; else return DEFAULT_STRAFE_LEFT_SECONDARY;
 	case EPlayerAction::StrafeRight: if (!IsSecondary) return DEFAULT_STRAFE_RIGHT; else return DEFAULT_STRAFE_RIGHT_SECONDARY;
 	case EPlayerAction::Sprint: if (!IsSecondary) return DEFAULT_SPRINT; else return DEFAULT_SPRINT_SECONDARY;
-	case EPlayerAction::Walk: if (!IsSecondary) return DEFAULT_WALK; else return DEFAULT_WALK_SECONDARY;
 	case EPlayerAction::Jump: if (!IsSecondary) return DEFAULT_JUMP; else return DEFAULT_JUMP_SECONDARY;
 	case EPlayerAction::Crouch: if (!IsSecondary) return DEFAULT_CROUCH; else return DEFAULT_CROUCH_SECONDARY;
 
@@ -138,9 +135,6 @@ void UControlsSettingsUI::PlayerActionToActionNames(EPlayerAction PlayerAction, 
 	// Movement
 	case EPlayerAction::Sprint:
 		ActionNames.Add(ABasePlayerController::ACTION_SPRINT);
-		break;
-	case EPlayerAction::Walk:
-		ActionNames.Add(ABasePlayerController::ACTION_WALK);
 		break;
 	case EPlayerAction::Jump:
 		ActionNames.Add(ABasePlayerController::ACTION_JUMP);

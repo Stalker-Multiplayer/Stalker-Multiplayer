@@ -97,7 +97,6 @@ const FName ABasePlayerController::ACTION_STRAFE_RIGHT = "StrafeRight";
 const FName ABasePlayerController::ACTION_TURN_RIGHT = "TurnRight";
 const FName ABasePlayerController::ACTION_LOOK_UP = "LookUp";
 const FName ABasePlayerController::ACTION_SPRINT = "Sprint";
-const FName ABasePlayerController::ACTION_WALK = "Walk";
 const FName ABasePlayerController::ACTION_JUMP = "Jump";
 const FName ABasePlayerController::ACTION_CROUCH = "Crouch";
 
