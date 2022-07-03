@@ -340,5 +340,8 @@
 			"Name": "MaterialAnalyzer",
 			"Enabled": false
 		}
+	],
+	"TargetPlatforms": [
+		"WindowsNoEditor"
 	]
 }

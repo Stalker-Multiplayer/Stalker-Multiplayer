@@ -137,12 +137,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_SPRINT, IE_Pressed, this, &APlayerCharacter::Sprint);
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_SPRINT, IE_Released, this, &APlayerCharacter::StopSprinting);
 
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_LEAN_LEFT, IE_Pressed, this, &APlayerCharacter::LeanLeft);
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_LEAN_LEFT, IE_Released, this, &APlayerCharacter::StopLeaningLeft);
-
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_LEAN_RIGHT, IE_Pressed, this, &APlayerCharacter::LeanRight);
-	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_LEAN_RIGHT, IE_Released, this, &APlayerCharacter::StopLeaningRight);
-
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_ACTION, IE_Pressed, this, &APlayerCharacter::DoAction);
 
 	PlayerInputComponent->BindAction(ABasePlayerController::ACTION_FIRE_PRIMARY, IE_Pressed, this, &APlayerCharacter::StartFiringPrimary);
@@ -168,7 +162,6 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(APlayerCharacter, MovingMode, COND_SkipOwner);
-	DOREPLIFETIME_CONDITION(APlayerCharacter, TargetLeanAngle, COND_SkipOwner);
 	DOREPLIFETIME(APlayerCharacter, ArmorItem);
 	DOREPLIFETIME(APlayerCharacter, WeaponItem);
 	DOREPLIFETIME_CONDITION(APlayerCharacter, Health, COND_OwnerOnly);
@@ -468,32 +461,6 @@ void APlayerCharacter::ApplyMovement()
 
 void APlayerCharacter::UpdateAngles(float DeltaTime)
 {
-	bool LeanAngleChanged = false;
-	if (LeanAngle != TargetLeanAngle)
-	{
-		float Diff = LeanAngle - TargetLeanAngle;
-		float DiffChange = LeaningSpeed * DeltaTime;
-		if (Diff <= DiffChange && Diff >= -DiffChange)
-		{
-			LeanAngle = TargetLeanAngle;
-		}
-		else if (Diff > 0)
-		{
-			LeanAngle -= DiffChange;
-		}
-		else if (Diff < 0)
-		{
-			LeanAngle += DiffChange;
-		}
-
-		if (IsLocallyControlled())
-		{
-			FirstPersonMesh->SetRelativeTransform(FTransform(BaseFirstPersonMeshTransform.Rotator() + FRotator(LeanAngle * 0.66, 0, 0),
-				BaseFirstPersonMeshTransform.GetTranslation().RotateAngleAxis(-LeanAngle * 0.66, FVector::ForwardVector), BaseFirstPersonMeshTransform.GetScale3D()));
-		}
-
-		LeanAngleChanged = true;
-	}
 
 	//if (IsLocallyControlled())
 	{
@@ -524,11 +491,9 @@ void APlayerCharacter::UpdateAngles(float DeltaTime)
 			CameraOffsetChanged = true;
 		}
 
-		if (LeanAngleChanged || CameraOffsetChanged)
+		if (CameraOffsetChanged)
 		{
-			float Sin = UKismetMathLibrary::Sin(UKismetMathLibrary::DegreesToRadians(LeanAngle));
-			float Cos = UKismetMathLibrary::Cos(UKismetMathLibrary::DegreesToRadians(LeanAngle));
-			CameraLocationOffset = FVector(0, CameraLocationOffset.Z * Sin + CameraLocationOffset.Y * Cos, CameraLocationOffset.Z * Cos - CameraLocationOffset.Y * Sin);
+			CameraLocationOffset = FVector(0, CameraLocationOffset.Y, CameraLocationOffset.Z);
 
 			if (bIsCrouched)
 			{
@@ -669,76 +634,6 @@ void APlayerCharacter::Server_SprintPressed_Implementation(bool Pressed)
 bool APlayerCharacter::Server_SprintPressed_Validate(bool Pressed)
 {
 	// We don't validate yet
-	return true;
-}
-
-void APlayerCharacter::LeanLeft()
-{
-	bLeanLeftPressed = true;
-	if (bLeanRightPressed)
-	{
-		TargetLeanAngle = 0;
-	}
-	else
-	{
-		TargetLeanAngle = -MaxLeanAngle;
-	}
-
-	Server_LeanUpdated(TargetLeanAngle);
-}
-
-void APlayerCharacter::StopLeaningLeft()
-{
-	bLeanLeftPressed = false;
-	if (bLeanRightPressed)
-	{
-		TargetLeanAngle = MaxLeanAngle;
-	}
-	else
-	{
-		TargetLeanAngle = 0;
-	}
-
-	Server_LeanUpdated(TargetLeanAngle);
-}
-
-void APlayerCharacter::LeanRight()
-{
-	bLeanRightPressed = true;
-	if (bLeanLeftPressed)
-	{
-		TargetLeanAngle = 0;
-	}
-	else
-	{
-		TargetLeanAngle = MaxLeanAngle;
-	}
-
-	Server_LeanUpdated(TargetLeanAngle);
-}
-
-void APlayerCharacter::StopLeaningRight()
-{
-	bLeanRightPressed = false;
-	if (bLeanLeftPressed)
-	{
-		TargetLeanAngle = -MaxLeanAngle;
-	}
-	else
-	{
-		TargetLeanAngle = 0;
-	}
-
-	Server_LeanUpdated(TargetLeanAngle);
-}
-
-void APlayerCharacter::Server_LeanUpdated_Implementation(float NewTargetLeanAngle)
-{
-	TargetLeanAngle = NewTargetLeanAngle;
-}
-
-bool APlayerCharacter::Server_LeanUpdated_Validate(float NewLeanType)
-{
 	return true;
 }
 

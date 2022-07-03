@@ -354,15 +354,11 @@ void AFirearmWeaponItem::AddRecoil()
 
 void AFirearmWeaponItem::UpdateRecoil(float DeltaSeconds)
 {
-	float LeanAngleRad = UKismetMathLibrary::DegreesToRadians(PlayerCharacter->GetLeanAngle());
-
 	CurrentVerticalRecoil *= CurrentRecoilScale;
-	PlayerController->AddPitchInput(CurrentVerticalRecoil * UKismetMathLibrary::Cos(LeanAngleRad)
-		+ CurrentHorizontalRecoil * -UKismetMathLibrary::Sin(LeanAngleRad));
+	PlayerController->AddPitchInput(CurrentVerticalRecoil);
 
 	CurrentHorizontalRecoil *= CurrentRecoilScale;
-	PlayerController->AddYawInput(CurrentVerticalRecoil * -UKismetMathLibrary::Sin(LeanAngleRad)
-		+ CurrentHorizontalRecoil * UKismetMathLibrary::Cos(LeanAngleRad));
+	PlayerController->AddYawInput(CurrentHorizontalRecoil);
 
 	FRotator ControlRotation = PlayerController->GetControlRotation();
 	ControlRotation.Roll = CurrentHorizontalRecoil * CAMERA_ROLL_SCALE;

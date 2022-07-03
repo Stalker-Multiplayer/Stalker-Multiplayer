@@ -27,7 +27,6 @@ void UPlayerCharacterAnimation::NativeUpdateAnimation(float DeltaTimeX)
 		UpdateCrouching();
 		UpdateInAir();
 		UpdateAimRotation();
-		UpdateLeanRotation();
 		UpdateWeaponHoldState();
 		UpdateIsDoingLongAction();
 	}
@@ -115,13 +114,6 @@ void UPlayerCharacterAnimation::UpdateAimRotation()
 	{
 		AimRotation.Roll = -1 * Roll;
 	}
-}
-
-void UPlayerCharacterAnimation::UpdateLeanRotation()
-{
-	float RollRad = UKismetMathLibrary::DegreesToRadians(PlayerCharacter->GetLookRotator().Pitch);
-	LeanRotation.Pitch = PlayerCharacter->GetLeanAngle() * UKismetMathLibrary::Cos(RollRad);
-	LeanRotation.Yaw = PlayerCharacter->GetLeanAngle() * -UKismetMathLibrary::Sin(RollRad);
 }
 
 void UPlayerCharacterAnimation::UpdateWeaponHoldState()

@@ -126,8 +126,6 @@ enum class EPlayerAction : uint8
 	Walk						UMETA(DisplayName = "Walk"),
 	Jump						UMETA(DisplayName = "Jump"),
 	Crouch						UMETA(DisplayName = "Crouch"),
-	LeanLeft					UMETA(DisplayName = "LeanLeft"),
-	LeanRight					UMETA(DisplayName = "LeanRight"),
 
 	// Firing
 	FirePrimary					UMETA(DisplayName = "FirePrimary"),

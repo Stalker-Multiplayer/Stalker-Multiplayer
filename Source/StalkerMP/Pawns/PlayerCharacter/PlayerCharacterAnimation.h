@@ -114,9 +114,6 @@ protected:
 		FRotator AimRotation = FRotator();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
-		FRotator LeanRotation = FRotator();
-
-	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 		ETorsoAnimation CurrentTorsoAnimation = ETorsoAnimation::Torso0;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
@@ -202,9 +199,6 @@ protected:
 
 	UFUNCTION()
 		void UpdateAimRotation();
-
-	UFUNCTION()
-		void UpdateLeanRotation();
 
 	UFUNCTION()
 		void UpdateWeaponHoldState();

@@ -100,8 +100,6 @@ const FName ABasePlayerController::ACTION_SPRINT = "Sprint";
 const FName ABasePlayerController::ACTION_WALK = "Walk";
 const FName ABasePlayerController::ACTION_JUMP = "Jump";
 const FName ABasePlayerController::ACTION_CROUCH = "Crouch";
-const FName ABasePlayerController::ACTION_LEAN_LEFT = "LeanLeft";
-const FName ABasePlayerController::ACTION_LEAN_RIGHT = "LeanRight";
 
 // Firing
 const FName ABasePlayerController::ACTION_FIRE_PRIMARY = "FirePrimary";

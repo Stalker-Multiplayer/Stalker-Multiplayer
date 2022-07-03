@@ -30,8 +30,6 @@ void UControlsSettingsUI::NativeConstruct()
 	ReadAndApplyKeySetting(EPlayerAction::Crouch);
 	ReadAndApplyKeySetting(EPlayerAction::Sprint);
 	ReadAndApplyKeySetting(EPlayerAction::Walk);
-	ReadAndApplyKeySetting(EPlayerAction::LeanLeft);
-	ReadAndApplyKeySetting(EPlayerAction::LeanRight);
 	
 	// Firing
 	ReadAndApplyKeySetting(EPlayerAction::FirePrimary);
@@ -69,8 +67,6 @@ FString UControlsSettingsUI::PlayerActionToConfigName(EPlayerAction PlayerAction
 	case EPlayerAction::Walk: ConfigName = ABasePlayerController::ACTION_WALK.ToString(); break;
 	case EPlayerAction::Jump: ConfigName = ABasePlayerController::ACTION_JUMP.ToString(); break;
 	case EPlayerAction::Crouch: ConfigName = ABasePlayerController::ACTION_CROUCH.ToString(); break;
-	case EPlayerAction::LeanLeft: ConfigName = ABasePlayerController::ACTION_LEAN_LEFT.ToString(); break;
-	case EPlayerAction::LeanRight: ConfigName = ABasePlayerController::ACTION_LEAN_RIGHT.ToString(); break;
 
 	// Firing
 	case EPlayerAction::FirePrimary: ConfigName = ABasePlayerController::ACTION_FIRE_PRIMARY.ToString(); break;
@@ -112,8 +108,6 @@ FString UControlsSettingsUI::DefaultPlayerActionKey(EPlayerAction PlayerAction, 
 	case EPlayerAction::Walk: if (!IsSecondary) return DEFAULT_WALK; else return DEFAULT_WALK_SECONDARY;
 	case EPlayerAction::Jump: if (!IsSecondary) return DEFAULT_JUMP; else return DEFAULT_JUMP_SECONDARY;
 	case EPlayerAction::Crouch: if (!IsSecondary) return DEFAULT_CROUCH; else return DEFAULT_CROUCH_SECONDARY;
-	case EPlayerAction::LeanLeft: if (!IsSecondary) return DEFAULT_LEAN_LEFT; else return DEFAULT_LEAN_LEFT_SECONDARY;
-	case EPlayerAction::LeanRight: if (!IsSecondary) return DEFAULT_LEAN_RIGHT; else return DEFAULT_LEAN_RIGHT_SECONDARY;
 
 		// Firing
 	case EPlayerAction::FirePrimary: if (!IsSecondary) return DEFAULT_FIRE_PRIMARY; else return DEFAULT_FIRE_PRIMARY_SECONDARY;
@@ -153,12 +147,6 @@ void UControlsSettingsUI::PlayerActionToActionNames(EPlayerAction PlayerAction, 
 		break;
 	case EPlayerAction::Crouch:
 		ActionNames.Add(ABasePlayerController::ACTION_CROUCH);
-		break;
-	case EPlayerAction::LeanLeft:
-		ActionNames.Add(ABasePlayerController::ACTION_LEAN_LEFT);
-		break;
-	case EPlayerAction::LeanRight:
-		ActionNames.Add(ABasePlayerController::ACTION_LEAN_RIGHT);
 		break;
 
 	// Firing

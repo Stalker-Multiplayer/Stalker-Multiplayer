@@ -105,12 +105,6 @@ private:
 	// Transformation
 
 	UPROPERTY()
-		bool bLeanLeftPressed = false;
-
-	UPROPERTY()
-		bool bLeanRightPressed = false;
-
-	UPROPERTY()
 		float StandCrouchCameraDiff = 30;
 
 	UPROPERTY()
@@ -118,12 +112,6 @@ private:
 
 	UPROPERTY()
 		float TargetCameraCrouchLerp = 0;
-
-	UPROPERTY()
-		float LeanAngle = 0;
-
-	UPROPERTY(Replicated)
-		float TargetLeanAngle = 0;
 
 	UPROPERTY()
 		FTransform BaseFirstPersonMeshTransform;
@@ -272,12 +260,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Transformation")
 		float SecondsToCrouch = 0.3;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Transformation")
-		float MaxLeanAngle = 30;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Transformation")
-		float LeaningSpeed = 150;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Transformation")
 		float AimFieldOfViewScale = 1.0f;
@@ -442,21 +424,6 @@ private:
 	UFUNCTION(NetMulticast, Unreliable)
 		void Client_UpdateLookRotator(float Pitch, float Yaw, float Roll);
 
-	UFUNCTION()
-		void LeanLeft();
-
-	UFUNCTION()
-		void StopLeaningLeft();
-
-	UFUNCTION()
-		void LeanRight();
-
-	UFUNCTION()
-		void StopLeaningRight();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-		void Server_LeanUpdated(float NewTargetLeanAngle);
-
 
 	// Status
 
@@ -614,9 +581,6 @@ public:
 
 	UFUNCTION()
 		FTransform GetCameraTransform();
-
-	UFUNCTION()
-		float GetLeanAngle() { return LeanAngle; };
 
 
 	// HUD

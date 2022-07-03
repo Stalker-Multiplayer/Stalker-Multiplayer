@@ -127,8 +127,6 @@ public:
 	static const FName ACTION_WALK;
 	static const FName ACTION_JUMP;
 	static const FName ACTION_CROUCH;
-	static const FName ACTION_LEAN_LEFT;
-	static const FName ACTION_LEAN_RIGHT;
 
 	// Firing
 	static const FName ACTION_FIRE_PRIMARY;
