@@ -278,10 +278,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "VisualStudioCodeSourceCodeAccess",
-			"Enabled": false
-		},
-		{
 			"Name": "CableComponent",
 			"Enabled": false
 		},

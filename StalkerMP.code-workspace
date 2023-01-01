@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"name": "StalkerMP",
+			"path": "."
+		},
+		{
+			"name": "UE4",
+			"path": "D:\\Games\\UE_4.25"
+		}
+	],
+	"settings": {
+		"typescript.tsc.autoDetect": "off",
+		"C_Cpp.default.forcedInclude": [
+			"d:\\Edu\\Stalker-Multiplayer\\Intermediate\\Build\\Win64\\UE4Editor\\Development\\StalkerMP\\Definitions.StalkerMP.h"
+		]
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-vscode.cpptools",
+			"ms-dotnettools.csharp"
+		]
+	}
+}
